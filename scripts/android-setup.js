@@ -37,6 +37,15 @@ if (!man.includes('android:scheme="vird"')) {
   fs.writeFileSync(manPath, man);
 }
 
+// 2b) Namaz vakitleri için yaklaşık konum izni
+man = fs.readFileSync(manPath, 'utf8');
+if (!man.includes('ACCESS_COARSE_LOCATION')) {
+  man = man.replace('<uses-permission android:name="android.permission.INTERNET" />',
+    '<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />');
+  if (!man.includes('ACCESS_COARSE_LOCATION')) throw new Error('Konum izni eklenemedi');
+  fs.writeFileSync(manPath, man);
+}
+
 // 3) İmza ve sürüm numarası
 const run = parseInt(process.env.GITHUB_RUN_NUMBER || '1', 10);
 const gPath = path.join(app, 'build.gradle');

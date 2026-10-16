@@ -1,43 +1,101 @@
 rules_version = '2';
-// Vird: Firestore güvenlik kuralları. Firebase konsolu > Firestore > Kurallar sekmesine yapıştır.
+// Vird: Firestore güvenlik kuralları (kişiler + gruplar).
+// Firebase konsolu > Firestore Database > Kurallar sekmesine yapıştırıp Yayınla.
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
-    function isDevice(fid) {
-      return signedIn() && exists(/databases/$(database)/documents/families/$(fid)/devices/$(request.auth.uid));
-    }
-    function isDeviceAfter(fid) {
-      return signedIn() && existsAfter(/databases/$(database)/documents/families/$(fid)/devices/$(request.auth.uid));
-    }
+    function uid() { return request.auth.uid; }
+    function hasDev() { return signedIn() && exists(/databases/$(database)/documents/devices/$(uid())); }
+    function me() { return get(/databases/$(database)/documents/devices/$(uid())).data.pid; }
+    function meAfter() { return getAfter(/databases/$(database)/documents/devices/$(uid())).data.pid; }
+    function myGroups() { return get(/databases/$(database)/documents/people/$(me())).data.groups; }
+    function inGroup(g) { return hasDev() && myGroups().hasAny([g]); }
+    function joined(g) { return exists(/databases/$(database)/documents/groups/$(g)/joins/$(uid())); }
+    function joinedAfter(g) { return existsAfter(/databases/$(database)/documents/groups/$(g)/joins/$(uid())); }
     function invite(t) { return get(/databases/$(database)/documents/invites/$(t)).data; }
+    // eski "families" yapısından bir kerelik taşıma için
+    function oldDev(g) { return signedIn() && exists(/databases/$(database)/documents/families/$(g)/devices/$(uid())); }
 
-    match /invites/{token} {
-      allow get: if signedIn();
-      allow create: if isDevice(request.resource.data.fid) && request.resource.data.exp is int;
+    match /devices/{d} {
+      allow read: if signedIn() && d == uid();
+      allow delete: if signedIn() && d == uid();
+      allow create, update: if signedIn() && d == uid() && (
+        // yeni kişi (aynı işlemde oluşturuluyor)
+        (!exists(/databases/$(database)/documents/people/$(request.resource.data.pid)) &&
+          getAfter(/databases/$(database)/documents/people/$(request.resource.data.pid)).data.owner == uid()) ||
+        // davetle katıldığı gruptaki mevcut kişiyi sahiplenme (telefon değişimi)
+        (request.resource.data.joined is string && request.resource.data.joined != '' &&
+          joinedAfter(request.resource.data.joined) &&
+          getAfter(/databases/$(database)/documents/people/$(request.resource.data.pid)).data.groups.hasAny([request.resource.data.joined])) ||
+        // taşıma: eski ailedeki kendi kaydı
+        (oldDev(request.resource.data.joined) &&
+          get(/databases/$(database)/documents/families/$(request.resource.data.joined)/devices/$(uid())).data.mid == request.resource.data.pid)
+      );
     }
 
-    match /families/{fid} {
-      allow create: if signedIn() && request.resource.data.owner == request.auth.uid;
-      allow read: if isDevice(fid);
-      allow update: if isDeviceAfter(fid);
+    match /invites/{t} {
+      allow get: if signedIn();
+      allow create: if inGroup(request.resource.data.gid) && request.resource.data.exp is int;
+    }
 
-      match /devices/{uid} {
-        allow read: if isDevice(fid);
-        allow create: if signedIn() && uid == request.auth.uid && (
-          getAfter(/databases/$(database)/documents/families/$(fid)).data.owner == request.auth.uid ||
-          (request.resource.data.invite is string &&
-           invite(request.resource.data.invite).fid == fid &&
-           invite(request.resource.data.invite).exp > request.time.toMillis()));
-        allow update, delete: if signedIn() && uid == request.auth.uid;
+    match /people/{pid} {
+      function P() { return get(/databases/$(database)/documents/people/$(pid)).data; }
+      function addedGroups() { return request.resource.data.groups.removeAll(resource.data.groups); }
+      function addOk() {
+        return addedGroups().size() == 0 || (addedGroups().size() == 1 && (
+          joinedAfter(addedGroups()[0]) ||
+          getAfter(/databases/$(database)/documents/groups/$(addedGroups()[0])).data.owner == pid));
       }
-      match /members/{mid} {
-        allow read: if isDevice(fid);
-        allow create, update, delete: if isDeviceAfter(fid);
+      allow read: if signedIn() && (
+        resource.data.owner == uid() ||
+        (hasDev() && (me() == pid || myGroups().hasAny(resource.data.groups))) ||
+        oldDev(resource.data.groups[0]));
+      allow create: if signedIn() && (
+        (request.resource.data.owner == uid() && request.resource.data.groups.size() == 0) ||
+        (request.resource.data.owner == uid() && request.resource.data.groups.size() == 1 && joinedAfter(request.resource.data.groups[0])) ||
+        (request.resource.data.managed == true && request.resource.data.groups.size() == 1 && inGroup(request.resource.data.groups[0])) ||
+        (request.resource.data.groups.size() == 1 && oldDev(request.resource.data.groups[0])));
+      allow update: if signedIn() && (
+        (meAfter() == pid && addOk()) ||
+        (resource.data.managed == true && inGroup(resource.data.groups[0]) && request.resource.data.groups == resource.data.groups));
+      allow delete: if signedIn() && (
+        (hasDev() && me() == pid) ||
+        (resource.data.managed == true && inGroup(resource.data.groups[0])));
+
+      match /logs/{k} {
+        allow read: if signedIn() && hasDev() && (me() == pid || myGroups().hasAny(P().groups));
+        allow write: if signedIn() && (
+          (hasDev() && me() == pid) ||
+          (P().managed == true && inGroup(P().groups[0])) ||
+          oldDev(P().groups[0]));
       }
-      match /logs/{id} {
-        allow read: if isDevice(fid);
-        allow create, update, delete: if isDeviceAfter(fid);
+    }
+
+    match /groups/{g} {
+      allow read: if signedIn() && (inGroup(g) || joined(g) || oldDev(g));
+      allow create: if signedIn() && (
+        (request.resource.data.owner == meAfter() &&
+          getAfter(/databases/$(database)/documents/people/$(request.resource.data.owner)).data.groups.hasAny([g])) ||
+        oldDev(g));
+      allow update: if signedIn() && (inGroup(g) || joinedAfter(g));
+      allow delete: if hasDev() && resource.data.owner == me();
+
+      match /joins/{d} {
+        allow read: if signedIn() && d == uid();
+        allow create, update: if signedIn() && d == uid() &&
+          invite(request.resource.data.invite).gid == g &&
+          invite(request.resource.data.invite).exp > request.time.toMillis();
       }
+      match /logs/{k} {
+        allow read, write: if inGroup(g) || oldDev(g);
+      }
+    }
+
+    // eski yapı (sadece taşıma sırasında okunur)
+    match /families/{fid} {
+      function isDevice() { return signedIn() && exists(/databases/$(database)/documents/families/$(fid)/devices/$(uid())); }
+      allow read: if isDevice();
+      match /{rest=**} { allow read: if isDevice(); }
     }
   }
 }

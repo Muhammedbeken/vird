@@ -21,7 +21,7 @@
 <main>
   <svg width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><polygon id="st" fill="#E2B85C"/></svg>
   <h1>Vird</h1>
-  <p>Ailene katılman için davet edildin.</p>
+  <p>Bir Vird grubuna davet edildin.</p>
   <a class="btn p" id="open" href="#">Vird'de aç</a>
   <a class="btn s" id="apk" href="#">Vird yüklü değil mi? İndir</a>
   <button class="s" id="copy">Davet linkini kopyala</button>
@@ -40,7 +40,7 @@
   var owner=location.hostname.split('.')[0], repo=location.pathname.split('/')[1]||'vird';
   document.getElementById('apk').href='https://github.com/'+owner+'/'+repo+'/releases/latest/download/vird.apk';
   var open=document.getElementById('open');
-  if(!t){ document.getElementById('msg').textContent='Bu linkte davet kodu yok. Davet gönderen kişiden yeni link iste.'; open.style.display='none'; }
+  if(!t){ document.getElementById('msg').textContent='Bu linkte davet bilgisi yok. Davet gönderen kişiden yeni bir link iste.'; open.style.display='none'; }
   else if(/Android/i.test(navigator.userAgent)){ open.href='intent://davet?t='+t+'#Intent;scheme=vird;package='+PKG+';end'; }
   else { open.href='vird://davet?t='+t; }
   document.getElementById('copy').onclick=function(){ var s=location.href; (navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(function(){ document.getElementById('msg').textContent='Link kopyalandı.'; },function(){ prompt('Linki kopyala:',s); }); };
