@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vird: aile ibadet takibi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Amiri&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 :root{
   --bg:#F2F5F4; --surface:#FFFFFF; --surface-2:#E8EEEC; --ink:#142B2A; --ink-2:#5A6F6D; --line:#D9E2DF;
@@ -40,7 +38,8 @@
 :root{box-sizing:border-box;padding-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px));padding-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 64px);-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.45}
+html{font-size:calc(100% * var(--fs,1))}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.03rem;line-height:1.45}
 [hidden]{display:none!important}
 html,body{overscroll-behavior-y:none}
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:var(--safe-area-inset-top,env(safe-area-inset-top,0px));background:var(--bg);z-index:35;pointer-events:none}
@@ -89,8 +88,10 @@ button:disabled{opacity:.38;cursor:default}
 .sum{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center}
 .star{position:relative;display:block;width:96px;aspect-ratio:1}
 .star svg{display:block;width:100%;height:100%;overflow:visible}
-.s-bg{fill:var(--surface-2)}
-.s-fill{fill:var(--fill);transition:transform .35s ease}
+.s-clip{position:absolute;inset:0}
+.s-bg2{position:absolute;inset:0;background:var(--surface-2)}
+.s-fill2{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--fill);transition:height .35s ease}
+.star svg{position:relative}
 .s-line{fill:none;stroke:var(--cobalt);stroke-width:2.6;stroke-linejoin:round;transition:stroke .3s}
 .full .s-line{stroke:var(--turq)}
 .star .pct{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.35rem;font-variant-numeric:tabular-nums}
@@ -200,7 +201,7 @@ button:disabled{opacity:.38;cursor:default}
 
 /* alt menü */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
-.tabbar-in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tabbar-in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
 .tabbar button{border:0;background:none;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.74rem;font-weight:600;color:var(--ink-2)}
 .tabbar svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabbar button[aria-current="page"]{color:var(--cobalt)}
@@ -251,8 +252,8 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.12;background-size:64px 64px;background-position:center}
 .hero .sum{grid-template-columns:112px 1fr}
 .hero .star{width:112px}
-.hero .s-bg{fill:rgba(255,255,255,.12)}
-.hero .s-fill{fill:var(--gold)}
+.hero .s-bg2{background:rgba(255,255,255,.12)}
+.hero .s-fill2{background:var(--gold)}
 .hero .s-line{stroke:rgba(255,255,255,.9)}
 .hero .full .s-line{stroke:var(--gold)}
 .hero .pct{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);font-size:1.5rem}
@@ -317,6 +318,34 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .gchip .gt{font-size:.72rem;font-weight:600;opacity:.7;margin-right:2px}
 .gchip.add{border-style:dashed;color:var(--cobalt)}
 .daily{margin-top:14px}
+.dt summary{list-style:none;cursor:pointer}
+.dt summary::-webkit-details-marker{display:none}
+.dt summary .h2{display:flex;justify-content:space-between;align-items:center}
+.dt summary .h2::after{content:"›";font-size:1.3rem;color:var(--ink-2);transform:rotate(90deg);transition:transform .2s}
+.dt[open] summary .h2::after{transform:rotate(-90deg)}
+.dt .peek{display:block;font-size:.9rem;color:var(--ink-2);margin-top:4px}
+.dt[open] .peek{display:none}
+.perseg{display:flex;margin-bottom:12px}
+.perseg button{flex:1;padding:.5rem 0}
+.tb-r{display:flex;gap:8px;align-items:center}
+.hero .stat{border:0;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.more{margin-top:14px;padding:4px 14px}
+.mrow2{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:none;padding:12px 0;border-top:1px solid var(--line);font:inherit;color:inherit;text-align:left}
+.mrow2:first-child{border-top:0}
+.mrow2 i{font-style:normal;font-size:1.3rem;color:var(--ink-2)}
+.addt{display:block;padding:10px 14px;border-top:1px dashed var(--line);width:100%;text-align:left;margin:0}
+.task.edit .t-main{cursor:pointer}
+.fl{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--ink-2);margin-top:12px}
+.fl input,.fl select{width:100%}
+.ted{max-width:560px}
+.srow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:13px 2px;border-top:1px solid var(--line);font:inherit;color:inherit;text-align:left}
+.srow:first-child{border-top:0}
+.srow b{display:block;font-weight:600}
+.srow small{display:block;color:var(--ink-2);font-size:.85rem}
+.srow i{margin-left:auto;font-style:normal;font-size:1.3rem;color:var(--ink-2)}
+.back{border:0;background:none;color:var(--cobalt);font-weight:700;padding:6px 0;margin:4px 0 2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.opts button{flex:1;min-width:5.5rem}
 .vakit{margin-top:14px}
 .vakit .vh{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
@@ -334,6 +363,38 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .rem label{flex:1;display:flex;align-items:center;gap:8px}
 .rem small{display:block;color:var(--ink-2)}
 .rem input[type=time]{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:.35rem .5rem}
+/* cilalama */
+.btn,.chip,.chk,.icon-btn,.stat,.srow,.mrow2,.tabbar button,.seg button{transition:transform .12s ease,background-color .2s ease,color .2s ease,opacity .2s ease}
+.btn:active,.chip:active,.chk:active,.icon-btn:active,.stat:active,.seg button:active{transform:scale(.96)}
+.srow:active,.mrow2:active{opacity:.6}
+.t-main:active{opacity:.7}
+@keyframes vEnter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#view.enter{animation:vEnter .22s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet:not([hidden]){animation:sheetUp .26s cubic-bezier(.2,.8,.2,1)}
+.sheet-bg:not([hidden]){animation:fadeIn .2s ease}
+.zikir:not([hidden]){animation:fadeIn .18s ease}
+.z-tap:focus-visible{outline:none}
+.z-tap:focus-visible .s-line{stroke-width:4}
+.sheet-head{padding:14px 14px 4px 18px}
+.sum-main{font-size:1.2rem}
+.hero .sum-main{font-size:1.3rem}
+.hero .stats{margin-top:12px}
+.hero .stat{padding:7px 10px}
+.h-col:disabled{opacity:1}
+.h-col:disabled .h-bar{background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.h-col:disabled .h-lab{opacity:.55}
+.btn[hidden]{display:none!important}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none;margin:0}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0 6px;font-size:1rem;color:var(--ink);cursor:pointer}
+.switch input{width:22px;height:22px}
+.rem label{gap:12px}
+.ed-row label{gap:8px}
+.sheet:focus{outline:none}
+.sheet-body h3:first-of-type{margin-top:10px}
+.back{font-size:.95rem}
+.wlogo{width:44px;height:44px;fill:var(--gold);stroke:var(--cobalt);stroke-width:3;margin-bottom:6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -353,9 +414,8 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 </main>
 
 <nav class="tabbar" aria-label="Bölümler"><div class="tabbar-in" id="tabbar">
-  <button data-tab="d"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2.5 12h2M19.5 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Günlük</button>
-  <button data-tab="w"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 15h10"/></svg>Haftalık</button>
-  <button data-tab="m"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h.01M12 14h.01M16.5 14h.01M7.5 17.5h.01M12 17.5h.01"/></svg>Aylık</button>
+  <button data-tab="bugun"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>Bugün</button>
+  <button data-tab="gorev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>Görevler</button>
   <button data-tab="y"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 17v-5M11 17V6M16 17v-3M20 17V9"/></svg>Yıllık</button>
   <button data-tab="aile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c3 .1 5.5 2 5.5 5.4"/></svg>Gruplar</button>
 </div></nav>
@@ -370,9 +430,11 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
   <div class="z-bottom" id="zBottom"></div>
 </div>
 
+<div class="sheet-bg" id="tedBg" hidden style="z-index:65"></div>
+<div class="sheet ted" id="ted" hidden role="dialog" aria-modal="true" aria-labelledby="tedTitle" style="z-index:70"><div class="sheet-body" id="tedBody" style="padding-top:18px"></div></div>
 <div class="sheet-bg" id="sheetBg" hidden></div>
-<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-head"><h2 id="sheetTitle">Ayarlar</h2><button class="btn ghost" id="sheetX">Kapat</button></div>
+<div class="sheet" id="sheet" tabindex="-1" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head"><h2 id="sheetTitle">Ayarlar</h2><button class="icon-btn" id="sheetX" aria-label="Kapat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="sheet-body" id="sheetBody"></div>
   <div class="sheet-foot"><button class="btn ghost" id="sheetCancel">Vazgeç</button><button class="btn plus" id="sheetSave">Kaydet</button></div>
 </div>
@@ -458,8 +520,9 @@ function tipsFor(d){
   return t;
 }
 let starN=0;
-function starHTML(withPct){ const id='sc'+(++starN); return '<span class="star"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="'+id+'"><polygon points="'+STAR+'"/></clipPath></defs><polygon points="'+STAR+'" class="s-bg"/><g clip-path="url(#'+id+')"><rect class="s-fill" x="0" y="0" width="100" height="100"/></g><polygon points="'+STAR+'" class="s-line"/></svg>'+(withPct?'<span class="pct"></span>':'')+'</span>'; }
-function setStar(el,f){ if(!el) return; f=Math.max(0,Math.min(1,f)); el.querySelector('.s-fill').style.transform='translateY('+(100*(1-f)).toFixed(2)+'px)'; el.classList.toggle('full',f>=1); const p=el.querySelector('.pct'); if(p)p.textContent=pctS(f); }
+const STARPCT=STAR.split(' ').map(p=>{ const a=p.split(','); return a[0]+'% '+a[1]+'%'; }).join(',');
+function starHTML(withPct){ return '<span class="star"><span class="s-clip" style="clip-path:polygon('+STARPCT+')"><span class="s-bg2"></span><span class="s-fill2"></span></span><svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STAR+'" class="s-line"/></svg>'+(withPct?'<span class="pct"></span>':'')+'</span>'; }
+function setStar(el,f){ if(!el) return; f=Math.max(0,Math.min(1,f)); const fl=el.querySelector('.s-fill2'); if(fl) fl.style.height=(f*100).toFixed(1)+'%'; el.classList.toggle('full',f>=1); const p=el.querySelector('.pct'); if(p) p.textContent=pctS(f); }
 
 /* durum */
 const state={tasks:clone(DEFAULT_TASKS),members:[],prof:{},me:null,joined:false,canWrite:false,canAdmin:false,
@@ -467,10 +530,15 @@ const state={tasks:clone(DEFAULT_TASKS),members:[],prof:{},me:null,joined:false,
 const store={mode:'init',db:null,user:null,pend:{},inflight:{},timers:{},writing:{},subs:{},retry:{},readOnly:false,localT:null,dl:null};
 let timer=null;
 try{ timer=JSON.parse(localStorage.getItem('vird:timer')||'null'); }catch(e){}
-try{ const p=JSON.parse(localStorage.getItem('vird:prefs')||'{}'); if(['d','w','m','y','aile'].includes(p.tab))state.tab=p.tab; else if(PNAME[p.period])state.tab=p.period; if(p.view)state.view=p.view; if(p.filter==='left')state.filter='left'; }catch(e){}
-const savePrefs=()=>{try{localStorage.setItem('vird:prefs',JSON.stringify({tab:state.tab,view:state.view,filter:state.filter}));}catch(e){}};
+try{ const p=JSON.parse(localStorage.getItem('vird:prefs')||'{}'); state.tab='bugun'; if(PNAME[p.per]) state.per=p.per; if(p.view)state.view=p.view; if(p.filter==='left')state.filter='left'; }catch(e){}
+const savePrefs=()=>{try{localStorage.setItem('vird:prefs',JSON.stringify({tab:state.tab,per:state.per,view:state.view,filter:state.filter}));}catch(e){}};
 const saveTimer=()=>{try{ timer?localStorage.setItem('vird:timer',JSON.stringify(timer)):localStorage.removeItem('vird:timer'); }catch(e){}};
+const APP=(function(){ let x=null; try{ x=JSON.parse(localStorage.getItem('vird:app')||'null'); }catch(e){} x=Object.assign({fs:1,theme:'auto'},x||{}); if(![0.9,1,1.12,1.25].includes(+x.fs)) x.fs=1; if(!['auto','light','dark'].includes(x.theme)) x.theme='auto'; return x; })();
+const appSave=()=>{ try{ localStorage.setItem('vird:app',JSON.stringify(APP)); }catch(e){} };
+function applyApp(){ const r=document.documentElement; r.style.setProperty('--fs',String(APP.fs)); if(APP.theme==='auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme',APP.theme); }
+applyApp();
 const period=()=>PNAME[state.tab]?state.tab:'d';
+if(!state.per) state.per='d';
 
 function normTasks(ts){
   if(!Array.isArray(ts)) return null;
@@ -541,7 +609,7 @@ const GTYPES={aile:'Aile',arkadas:'Arkadaşlar',ozel:'Özel grup'};
 const sharedLabel=()=>{ const G=state.groups[GID]; return G&&G.type==='aile'?'Ailece':'Grupça'; };
 
 /* görev listeleri: kişisel + seçili grubun ortak görevleri */
-state.people={}; state.groups={}; state.glogs={};
+state.people={}; state.groups={}; state.glogs={}; state.keep=new Set(); state.keepKey='';
 const DEF_PERSONAL=DEFAULT_TASKS.filter(t=>t.scope!=='aile');
 const DEF_GROUP_AILE=DEFAULT_TASKS.filter(t=>t.scope==='aile');
 let tcache={},tver=0; const bump=()=>{ tver++; tcache={}; };
@@ -914,7 +982,7 @@ async function loadAyet(d){
   }
   ayetSt[key]='err'; render();
 }
-function dailyHTML(d){
+function dailyHTML(d,compact){
   const key=iso(d),A=ayetSt[key]; if(!A) loadAyet(d);
   let a;
   if(A&&A.tr) a='<p class="d-ar" lang="ar" dir="rtl">'+esc(A.ar)+'</p><p class="d-tr">'+esc(A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
@@ -922,8 +990,10 @@ function dailyHTML(d){
   else a='<p class="d-tr muted">Yükleniyor…</p>';
   if(A==='err') delete ayetSt[key];
   const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length];
-  return '<section class="card card-pad daily"><h2 class="h2">Günün âyeti</h2>'+a+'<p class="d-src">'+(A&&A.tr?(A.ed==='tr.vakfi'?'Meal: Türkiye Diyanet Vakfı':'Meal: Diyanet İşleri Başkanlığı'):'')+'</p></section>'+
-    '<section class="card card-pad daily"><h2 class="h2">Günün hadisi</h2><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></section>';
+  const src='<p class="d-src">'+(A&&A.tr?(A.ed==='tr.vakfi'?'Meal: Türkiye Diyanet Vakfı':'Meal: Diyanet İşleri Başkanlığı'):'')+'</p>';
+  const peek=x=>{ x=String(x||''); return x.length>70?x.slice(0,70).replace(/\s+\S*$/,'')+'…':x; };
+  return '<details class="card card-pad daily dt" id="dAyet"'+(state.openAyet?' open':'')+'><summary><h2 class="h2">Günün âyeti</h2><span class="peek">'+esc(A&&A.tr?peek(A.tr):'')+'</span></summary>'+a+src+'</details>'+
+    '<details class="card card-pad daily dt" id="dHadis"'+(state.openHadis?' open':'')+'><summary><h2 class="h2">Günün hadisi</h2><span class="peek">'+esc(peek(H[0]))+'</span></summary><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></details>';
 }
 
 async function init(){
@@ -964,7 +1034,7 @@ function renderJoin(){
   }
   else if(gate.mode==='welcome'){
     sig='welcome'+(gate.err||'');
-    h='<section class="card card-pad join welcome"><p class="big">Vird\'e hoş geldin</p><p class="muted">Günlük, haftalık ve aylık ibadetlerini takip et. Sonra ailenle ya da arkadaşlarınla grup kurup birlikte takip edebilirsin.</p>'+(gate.err?'<p class="err">'+esc(gate.err)+'</p>':'')+
+    h='<section class="card card-pad join welcome"><svg class="wlogo" viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STAR+'"/></svg><p class="big">Vird\'e hoş geldin</p><p class="muted">Günlük, haftalık ve aylık ibadetlerini takip et. Sonra ailenle ya da arkadaşlarınla grup kurup birlikte takip edebilirsin.</p>'+(gate.err?'<p class="err">'+esc(gate.err)+'</p>':'')+
       '<div class="join-row"><input type="text" id="joinName" placeholder="Adın" maxlength="30" aria-label="Adın"><button class="btn plus" id="startBtn">Başla</button></div>'+
       '<div class="or">Davet linkin mi var?</div><p class="small muted" style="margin:0 0 8px">Linke dokunman yeterli; açılmazsa buraya yapıştır.</p><div class="join-row"><input type="text" id="invIn" placeholder="Davet linkini yapıştır" aria-label="Davet linki"><button class="btn" id="invBtn">Katıl</button></div></section>';
   }
@@ -973,14 +1043,14 @@ function renderJoin(){
 }
 function renderGroupsBar(){
   const el=$('groupsbar'),gs=state.joined?myGroups():[];
-  if(!gs.length){ el.hidden=true; el.innerHTML=''; return; }
+  if(!gs.length||state.tab==='bugun'){ el.hidden=true; el.innerHTML=''; return; }
   el.hidden=false;
   el.innerHTML=gs.map(g=>{ const G=state.groups[g]; return '<button class="chip gchip" data-gid="'+esc(g)+'" aria-pressed="'+(g===GID)+'">'+esc(G.name||'Grup')+'</button>'; }).join('')+'<button class="chip gchip add" data-goto="aile" aria-label="Yeni grup">+ Grup</button>';
 }
 function renderPeople(){
   renderGroupsBar();
   const el=$('people');
-  if(state.tab==='aile'||state.members.length<2||!state.joined){ el.innerHTML=''; el.hidden=true; return; }
+  if(state.tab==='aile'||state.tab==='bugun'||state.members.length<2||!state.joined){ el.innerHTML=''; el.hidden=true; return; }
   el.hidden=false;
   el.innerHTML=state.members.map(m=>{ const f=state.tab==='y'?yearStats(m.id,state.year).pct||0:comp(m.id,period(),state.cursor).pct;
     return '<button class="chip" data-mid="'+esc(m.id)+'" aria-pressed="'+(m.id===state.view)+'"><span class="dot" style="background:'+esc(colorOf(m.id))+'"></span><span>'+esc(dname(m.id))+'</span><span class="pc num">'+pctS(f)+'</span></button>'; }).join('');
@@ -1048,22 +1118,25 @@ function viewPeriod(){
   const u=state.view,p=period(),d=state.cursor,k=docKey(p,d);
   if(!u) return periodNav()+'<div class="card card-pad muted">Henüz kimse katılmadı.</div>';
   const c=comp(u,p,d); let sub,cls='sum-sub';
-  if(p==='d'){ const n=streak(u); sub=n?'Tam gün serisi: '+n+' gün':'Günün tüm görevleri bitince seri başlar'; if(n)cls+=' streak'; } else sub=remainingText(p,d);
-  let h=periodNav()+'<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(dname(u))+(u!==state.me&&!isManaged(u)?', yalnızca izleme':'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bu dönem için görev yok')+'</p><p class="'+cls+'">'+esc(sub)+'</p></div></div>'+catPills(u,p,d)+historyHTML(u)+'</section>';
-  if(p==='d') h+=vakitHTML(d);
-  if(p==='d'&&isCurrent('d',d)){ const tp=tipsFor(d); if(tp.length) h+='<section class="card card-pad tips"><h2 class="h2">Bugün için</h2><ul>'+tp.map(x=>'<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>').join('')+'</ul><p class="fine">Hicrî tarih Ümmü\'l-Kurâ takvimine göre; Diyanet takviminden bir gün farklı olabilir.</p></section>'; }
-  if(p==='d') h+=dailyHTML(d);
-  const ts=state.tasks.filter(t=>t.period===p),hide=state.filter==='left';
+  if(p==='d'){ const n=streak(u); sub=n?'Tam gün serisi: '+n+' gün':'Bugünü tamamla, seri başlasın'; if(n)cls+=' streak'; } else sub=remainingText(p,d);
+  let h='<div class="seg perseg" role="tablist" aria-label="Dönem">'+['d','w','m'].map(x=>'<button data-per="'+x+'" aria-pressed="'+(x===p)+'">'+PNAME[x]+'</button>').join('')+'</div>'+periodNav()+'<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(dname(u))+(u!==state.me&&!isManaged(u)?', yalnızca izleme':'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bu dönem için görev yok')+'</p><p class="'+cls+'">'+esc(sub)+'</p></div></div>'+catPills(u,p,d)+historyHTML(u)+'</section>';
+  if(false){ const tp=tipsFor(d); if(tp.length) h+='<section class="card card-pad tips"><h2 class="h2">Bugün için</h2><ul>'+tp.map(x=>'<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>').join('')+'</ul><p class="fine">Hicrî tarih Ümmü\'l-Kurâ takvimine göre; Diyanet takviminden bir gün farklı olabilir.</p></section>'; }
+  const ts=state.tasks.filter(t=>t.period===p),hide=state.filter==='left',keepK='p|'+k+'|'+u+'|'+state.filter;
+  if(state.keepKey!==keepK){ state.keepKey=keepK; state.keep=new Set(ts.filter(t=>frac(t,u,k,d)<0.9999).map(t=>t.id)); }
   const left=ts.filter(t=>frac(t,u,k,d)<0.9999).length;
-  h+='<div class="toolbar"><h2 class="h2">Görevler</h2><div class="seg" role="group" aria-label="Görev filtresi"><button data-filter="all" aria-pressed="'+!hide+'">Tümü</button><button data-filter="left" aria-pressed="'+hide+'">Kalan '+left+'</button></div></div>';
+  const canEd=u===ME&&state.joined;
+  h+='<div class="toolbar"><h2 class="h2">Görevler</h2><div class="tb-r">'+(state.editMode?'':'<div class="seg" role="group" aria-label="Görev filtresi"><button data-filter="all" aria-pressed="'+!hide+'">Tümü</button><button data-filter="left" aria-pressed="'+hide+'">Kalan '+left+'</button></div>')+(canEd?'<button class="btn'+(state.editMode?' plus':'')+'" data-edit>'+(state.editMode?'Bitti':'Düzenle')+'</button>':'')+'</div></div>';
+  if(state.editMode) h+='<p class="small muted" style="margin:-4px 2px 10px">Bir göreve dokun ve düzenle; oklarla sırasını değiştir. İpucu: düzenleme modunda olmadan da göreve basılı tutarak düzenleyebilirsin.</p>';
   let groups='';
   for(const [cid,cname] of CATS){
     const gts=ts.filter(t=>t.cat===cid); if(!gts.length) continue;
     const gd=gts.filter(t=>frac(t,u,k,d)>=0.9999).length;
-    const rows=gts.filter(t=>!hide||frac(t,u,k,d)<0.9999).map(t=>isEsma(t)?esmaHTML(t,u,k,hide):rowHTML(t,u,k)).join('');
+    const em=state.editMode&&canEd;
+    const rows=em?gts.map(t=>editRowHTML(t)).join(''):gts.filter(t=>!hide||frac(t,u,k,d)<0.9999||state.keep.has(t.id)).map(t=>isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('');
     if(!rows) continue;
-    groups+='<section class="group" style="--rc:var(--c-'+cid+')"><div class="g-head"><h3 class="h2">'+esc(cname)+'</h3><span>'+gd+' / '+gts.length+'</span></div><ul class="tasks">'+rows+'</ul></section>';
+    groups+='<section class="group" style="--rc:var(--c-'+cid+')"><div class="g-head"><h3 class="h2">'+esc(cname)+'</h3><span>'+gd+' / '+gts.length+'</span></div><ul class="tasks">'+rows+'</ul>'+(state.editMode&&canEd?'<button class="link addt" data-tedit="" data-tper="'+p+'" data-tcat="'+cid+'">+ '+esc(cname)+' görevi ekle</button>':'')+'</section>';
   }
+  if(state.editMode&&canEd) groups+='<p style="margin:14px 2px"><button class="btn" data-tedit="" data-tper="'+p+'" data-tcat="diger">+ Yeni görev</button></p>';
   h+=groups||'<section class="card"><p class="empty">'+(ts.length?'Bu dönemin tüm görevleri tamam. Allah kabul etsin.':'Bu dönem için görev yok.')+'</p></section>';
   if(p==='d'&&state.tasks.some(isEsma)){
     const today=new Set(esmaOfDay(d));
@@ -1072,6 +1145,88 @@ function viewPeriod(){
   return h;
 }
 let esmaOpen=false;
+function greet(){ const h=new Date().getHours(); return h<5?'Hayırlı geceler':h<11?'Hayırlı sabahlar':h<17?'Hayırlı günler':h<22?'Hayırlı akşamlar':'Hayırlı geceler'; }
+function viewToday(){
+  if(!state.joined) return '';
+  const u=ME,d=sod(new Date()),k=docKey('d',d); state.view=u;
+  const c=comp(u,'d',d),cw=comp(u,'w',d),cm=comp(u,'m',d),n=streak(u);
+  let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(greet())+(myName()?', '+esc(myName()):'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bugün için görev yok')+'</p><p class="sum-sub'+(n?' streak':'')+'">'+(n?'Tam gün serisi: '+n+' gün':'Bugünü tamamla, seri başlasın')+'</p></div></div>'+
+    '<div class="stats"><button class="stat" data-goper="w"><b>'+pctS(cw.pct)+'</b><span>bu hafta</span></button><button class="stat" data-goper="m"><b>'+pctS(cm.pct)+'</b><span>bu ay</span></button><button class="stat" data-goper="d"><b>'+(c.total-c.done)+'</b><span>kalan bugün</span></button></div></section>';
+  h+=vakitHTML(d);
+  const ts=tasksOf(u).filter(t=>t.period==='d'),keepK='t|'+k+'|'+u;
+  if(state.keepKey!==keepK){ state.keepKey=keepK; state.keep=new Set(ts.filter(t=>frac(t,u,k,d)<0.9999).map(t=>t.id)); }
+  const left=ts.filter(t=>frac(t,u,k,d)<0.9999||state.keep.has(t.id));
+  h+='<div class="toolbar"><h2 class="h2">Sıradaki işler</h2><button class="linkbtn" data-goper="d">Tüm görevler</button></div>';
+  if(left.some(t=>frac(t,u,k,d)<0.9999)) h+='<section class="group"><ul class="tasks">'+left.map(t=>isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('')+'</ul></section>';
+  else h+='<section class="card"><p class="empty">Bugünün görevleri tamam. Allah kabul etsin.</p></section>';
+  const lw=cw.total-cw.done,lm=cm.total-cm.done;
+  if(lw||lm) h+='<section class="card card-pad more">'+(lw?'<button class="mrow2" data-goper="w"><span>Bu haftadan <b>'+lw+'</b> görev kaldı</span><i>›</i></button>':'')+(lm?'<button class="mrow2" data-goper="m"><span>Bu aydan <b>'+lm+'</b> görev kaldı</span><i>›</i></button>':'')+'</section>';
+  if(GID&&state.members.length>1){ const G=state.groups[GID];
+    h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2">'+esc((G&&G.name)||'Grup')+' bugün</h2><button class="linkbtn" data-goto2="aile">Ayrıntı</button></div><div class="cats" style="margin-top:8px">'+state.members.map(m=>'<span class="chip"><span class="dot" style="background:'+esc(colorOf(m.id))+'"></span>'+esc(dname(m.id))+'<span class="pc num">'+pctS(comp(m.id,'d',d).pct)+'</span></span>').join('')+'</div></section>'; }
+  const tp=tipsFor(d);
+  if(tp.length) h+='<section class="card card-pad tips"><h2 class="h2">Bugün için</h2><ul>'+tp.map(x=>'<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>').join('')+'</ul><p class="fine">Hicrî tarih Ümmü\'l-Kurâ takvimine göre; Diyanet takviminden bir gün farklı olabilir.</p></section>';
+  h+=dailyHTML(d,true);
+  return h;
+}
+function editRowHTML(t){
+  const f=frac(t,ME,docKey(t.period,state.cursor),state.cursor);
+  const desc=isEsma(t)?'Her gün 3 isim':isDk(t)?fmtMin(t.target):NF.format(t.target)+(t.unit==='adet'?'':' '+t.unit);
+  return '<li class="task edit" data-id="'+esc(t.id)+'">'+ringHTML(f,t.cat)+'<button class="t-main" data-tedit="'+esc(t.id)+'"><span class="t-name">'+esc(t.name)+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(desc)+'</span></button><div class="t-ctl"><button class="btn" data-mv="-1" aria-label="'+esc(t.name)+' yukarı">↑</button><button class="btn" data-mv="1" aria-label="'+esc(t.name)+' aşağı">↓</button></div></li>';
+}
+/* görev düzenleyici */
+let ted=null;
+function taskSource(id){
+  const P=personalTasks(ME); if(P.some(t=>t.id===id)) return 'p';
+  if(GID&&groupTasks(GID).some(t=>t.id===id)) return 'g'; return null;
+}
+function openTaskEditor(id,per,cat){
+  if(!state.joined) return;
+  let t,src;
+  if(id){ src=taskSource(id); if(!src) return; t=clone((src==='p'?personalTasks(ME):groupTasks(GID)).find(x=>x.id===id)); }
+  else { src='p'; t={id:uid('t'),name:'',period:per||'d',target:1,unit:'kez',scope:'kisi',cat:CATNAME[cat]?cat:'diger'}; }
+  ted={t,src,orig:src,isNew:!id};
+  renderTaskEditor(); $('tedBg').hidden=false; $('ted').hidden=false; document.body.style.overflow='hidden';
+  const n=$('tedName'); if(n&&!id) n.focus();
+}
+function closeTaskEditor(){ ted=null; $('ted').hidden=true; $('tedBg').hidden=true; document.body.style.overflow=''; }
+function renderTaskEditor(){
+  const t=ted.t,es=isEsma(t),G=state.groups[GID];
+  let h='<h2 class="h2" id="tedTitle">'+(ted.isNew?'Yeni görev':'Görevi düzenle')+'</h2>'+
+    '<label class="fl">Ad<input type="text" id="tedName" value="'+esc(t.name)+'" maxlength="40"></label>';
+  if(!es) h+='<div class="ed-row"><label class="fl" style="flex:1">Hedef<input type="number" id="tedTarget" min="1" inputmode="numeric" value="'+esc(t.target)+'"></label><label class="fl" style="flex:1">Birim<select id="tedUnit">'+UNITS.map(x=>'<option value="'+x[0]+'"'+(x[0]===t.unit?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></label></div>';
+  else h+='<p class="ed-note">Her gün 3 isim önerilir; her ismin hedefi kendi sayısıdır.</p>';
+  h+='<div class="ed-row"><label class="fl" style="flex:1">Dönem<select id="tedPer"'+(es?' disabled':'')+'>'+['d','w','m'].map(x=>'<option value="'+x+'"'+(x===t.period?' selected':'')+'>'+PNAME[x]+'</option>').join('')+'</select></label><label class="fl" style="flex:1">Kategori<select id="tedCat">'+CATS.map(c=>'<option value="'+c[0]+'"'+(c[0]===t.cat?' selected':'')+'>'+c[1]+'</option>').join('')+'</select></label></div>';
+  if(G&&!es) h+='<div class="fl">Kimin görevi<div class="seg" style="margin-top:6px"><button data-tsrc="p" aria-pressed="'+(ted.src==='p')+'">Benim</button><button data-tsrc="g" aria-pressed="'+(ted.src==='g')+'">'+esc(sharedLabel())+' ('+esc(G.name||'grup')+')</button></div></div>';
+  h+='<div class="ed-row" style="margin-top:16px">'+(ted.isNew?'':'<button class="btn ghost danger" data-tact="del">Sil</button>')+'<span style="flex:1"></span><button class="btn ghost" data-tact="cancel">Vazgeç</button><button class="btn plus" data-tact="save">Kaydet</button></div>';
+  $('tedBody').innerHTML=h;
+}
+function tedRead(){ const t=ted.t,g=id=>$(id); if(g('tedName')) t.name=g('tedName').value; if(g('tedTarget')) t.target=g('tedTarget').value; if(g('tedUnit')) t.unit=g('tedUnit').value; if(g('tedPer')&&!g('tedPer').disabled) t.period=g('tedPer').value; if(g('tedCat')) t.cat=g('tedCat').value; }
+function saveTaskList(src,list){
+  if(!db) return Promise.resolve();
+  const clean=normTasks(list.map(x=>Object.assign({},x,{name:String(x.name||'').trim()})))||[];
+  if(src==='p') return db.collection('people').doc(ME).update({tasks:clean.map(x=>Object.assign(x,{scope:'kisi'}))});
+  return db.collection('groups').doc(GID).update({tasks:clean.map(x=>Object.assign(x,{scope:'aile'}))});
+}
+function listOf(src){ return clone(src==='p'?personalTasks(ME):groupTasks(GID)); }
+async function tedSave(del){
+  tedRead(); const t=ted.t,name=String(t.name||'').trim();
+  if(!del&&!name){ toast('Görev adını yaz.'); $('tedName').focus(); return; }
+  t.target=Math.max(1,Math.min(100000,parseInt(t.target,10)||1));
+  const ops=[];
+  if(!ted.isNew){ const L=listOf(ted.orig),i=L.findIndex(x=>x.id===t.id); if(i>=0){ if(del||ted.src!==ted.orig){ L.splice(i,1); } else L[i]=t; ops.push([ted.orig,L]); } }
+  if(!del&&(ted.isNew||ted.src!==ted.orig)){ const L=ted.src===ted.orig&&ops.length?ops[0][1]:listOf(ted.src); L.push(t); if(!(ted.src===ted.orig&&ops.length)) ops.push([ted.src,L]); }
+  closeTaskEditor();
+  try{ for(const [src,L] of ops) saveTaskList(src,L).catch(e=>{ console.warn(e); toast('Kaydedilemedi.'); }); toast(del?'Görev silindi.':'Kaydedildi.'); }catch(e){ toast('Kaydedilemedi.'); }
+}
+function moveTask(id,dir){
+  const src=taskSource(id); if(!src) return; const L=listOf(src),i=L.findIndex(x=>x.id===id); if(i<0) return;
+  const t=L[i]; let j=i+dir; while(j>=0&&j<L.length&&!(L[j].period===t.period&&L[j].cat===t.cat)) j+=dir;
+  if(j<0||j>=L.length) return; L[i]=L[j]; L[j]=t;
+  const P=state.people[ME],G=state.groups[GID];
+  if(src==='p'&&P) P.tasks=L; if(src==='g'&&G) G.tasks=L; bump(); render();
+  saveTaskList(src,L).catch(()=>toast('Sıra kaydedilemedi.'));
+}
+
 function heatLevel(f){ return f>=0.9999?'l4':f>=0.67?'l3':f>=0.34?'l2':f>0?'l1':''; }
 function viewYear(){
   const u=state.view,y=state.year,cy=new Date().getFullYear();
@@ -1115,12 +1270,12 @@ function viewYear(){
 function cellText(t,u,k,d){
   const v=val(t,u,k);
   if(isEsma(t)){ let n=0; for(const i of esmaOfDay(d)) if(val(t,u,k,'esma_'+(i+1))>=ESMA[i][2])n++; return n+'/3'; }
-  if(isBinary(t)) return v>=1?'✓':'–';
+  if(isBinary(t)) return v>=1?'1/1':'0/1';
   if(isDk(t)) return Math.floor(v/60)+'/'+t.target+' dk';
   return NF.format(Math.floor(v))+'/'+NF.format(t.target);
 }
 function newGroupForm(open){
-  return '<details class="card card-pad"'+(open?' open':'')+'><summary class="h2" style="cursor:pointer">Yeni grup oluştur</summary><div class="join-row" style="flex-wrap:wrap;margin-top:10px"><input type="text" id="gName" placeholder="Grup adı (örn. Ailem, Cuma arkadaşları)" maxlength="40" aria-label="Grup adı" style="flex:1;min-width:12rem"><select id="gType" aria-label="Grup türü"><option value="aile">Aile</option><option value="arkadas">Arkadaşlar</option><option value="ozel">Özel</option></select><button class="btn plus" data-g="create">Oluştur</button></div><p class="small muted" style="margin:8px 0 0">Aile grubunda “Ortak Kur\'an, Aile dersi, Zekât” gibi ortak görevler hazır gelir; diğer gruplarda ortak görevleri sen eklersin.</p></details>';
+  return '<details class="card card-pad" id="ngForm"'+(open||state.ngOpen?' open':'')+'><summary class="h2" style="cursor:pointer">Yeni grup oluştur</summary><div class="join-row" style="flex-wrap:wrap;margin-top:10px"><input type="text" id="gName" placeholder="Grup adı (örn. Ailem, Cuma arkadaşları)" maxlength="40" aria-label="Grup adı" style="flex:1;min-width:12rem"><select id="gType" aria-label="Grup türü"><option value="aile">Aile</option><option value="arkadas">Arkadaşlar</option><option value="ozel">Özel</option></select><button class="btn plus" data-g="create">Oluştur</button></div><p class="small muted" style="margin:8px 0 0">Aile grubunda “Ortak Kur\'an, Aile dersi, Zekât” gibi ortak görevler hazır gelir; diğer gruplarda ortak görevleri sen eklersin.</p></details>';
 }
 function viewAile(){
   if(!state.joined) return '';
@@ -1157,14 +1312,19 @@ function render(){
   for(const k in yCache) delete yCache[k];
   const fe=document.activeElement; let fsel=null;
   if(fe&&fe!==document.body&&$('view').contains(fe)){ const li=fe.closest('li.task'); if(li) fsel='li.task[data-id="'+li.dataset.id+'"]'+(li.dataset.ei?'[data-ei="'+li.dataset.ei+'"]':'')+' '+(fe.dataset.act?'[data-act="'+fe.dataset.act+'"]':'button'); else if(fe.dataset.filter) fsel='[data-filter="'+fe.dataset.filter+'"]'; else if(fe.dataset.nav) fsel='[data-nav="'+fe.dataset.nav+'"]'; else if(fe.dataset.ap) fsel='[data-ap="'+fe.dataset.ap+'"]'; }
-  const now=new Date(); $('gdate').textContent=fFull.format(now); let hj=''; if(fHijri){try{hj=fHijri.format(now);}catch(e){}} $('hdate').textContent=hj;
+  const now=new Date(); $('gdate').textContent=fFull.format(now); let hj=''; if(fHijri){ try{ const ps=fHijri.formatToParts(now),g=t=>(ps.find(x=>x.type===t)||{}).value||''; hj='Hicrî: '+(+g('day')||g('day'))+' '+g('month')+' '+String(g('year')).replace(/\D+$/,''); }catch(e){} } $('hdate').textContent=hj;
   $('btnSettings').hidden=!state.joined;
+  document.querySelector('.tabbar').hidden=!state.joined;
   if(!state.joined){ renderJoin(); renderPeople(); $('view').innerHTML=''; return; }
-  for(const b of $('tabbar').querySelectorAll('button')) b.toggleAttribute('aria-current',b.dataset.tab===state.tab), b.dataset.tab===state.tab&&b.setAttribute('aria-current','page');
+  for(const b of $('tabbar').querySelectorAll('button')){ const on=b.dataset.tab===state.tab||(b.dataset.tab==='gorev'&&!!PNAME[state.tab]); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); }
   renderJoin(); renderPeople();
   const v=$('view');
-  v.innerHTML=state.tab==='y'?viewYear():state.tab==='aile'?viewAile():viewPeriod();
+  const keepIn={}; v.querySelectorAll('input[id],select[id]').forEach(x=>{ keepIn[x.id]=x.type==='checkbox'?{c:x.checked}:{v:x.value}; });
+  const fx=document.activeElement&&v.contains(document.activeElement)&&document.activeElement.id?{id:document.activeElement.id,ss:document.activeElement.selectionStart,se:document.activeElement.selectionEnd}:null;
+  v.innerHTML=state.tab==='bugun'?viewToday():state.tab==='y'?viewYear():state.tab==='aile'?viewAile():viewPeriod();
   const as=$('aileStar'); if(as) setStar(as,+as.dataset.p);
+  for(const id in keepIn){ const x=document.getElementById(id); if(!x||!v.contains(x)) continue; if('c' in keepIn[id]) x.checked=keepIn[id].c; else if(keepIn[id].v!=null&&keepIn[id].v!=='') x.value=keepIn[id].v; }
+  if(fx){ const x=document.getElementById(fx.id); if(x){ x.focus({preventScroll:true}); try{ if(fx.ss!=null) x.setSelectionRange(fx.ss,fx.se); }catch(e){} } }
   const ss=$('sumStar'); if(ss){ const u=state.view; setStar(ss,state.tab==='y'?(yearStats(u,state.year).pct||0):comp(u,period(),state.cursor).pct); }
   if(cs) renderCounter();
   if(fsel){ try{ const el=v.querySelector(fsel); if(el&&!el.disabled) el.focus({preventScroll:true}); }catch(e){} }
@@ -1244,6 +1404,14 @@ $('zBottom').addEventListener('click',e=>{
   else if(a==='close') closeCounter();
 });
 $('zClose').addEventListener('click',closeCounter);
+let lpT=null,lpDone=false,lpXY=null;
+$('view').addEventListener('pointerdown',e=>{ const li=e.target.closest('li.task'); if(!li||li.classList.contains('sub')||li.classList.contains('edit')||state.view!==ME||!state.joined) return; lpDone=false; lpXY=[e.clientX,e.clientY]; clearTimeout(lpT); lpT=setTimeout(()=>{ if(!taskSource(li.dataset.id)) return; lpDone=true; buzz(15); openTaskEditor(li.dataset.id); },550); });
+for(const ev of ['pointerup','pointercancel','pointerleave']) $('view').addEventListener(ev,()=>clearTimeout(lpT));
+$('view').addEventListener('pointermove',e=>{ if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10) clearTimeout(lpT); });
+$('view').addEventListener('click',e=>{ if(lpDone){ lpDone=false; e.stopPropagation(); e.preventDefault(); } },true);
+$('view').addEventListener('contextmenu',e=>{ if(e.target.closest('li.task')) e.preventDefault(); });
+$('ted').addEventListener('click',e=>{ const s2=e.target.closest('[data-tsrc]'); if(s2){ tedRead(); ted.src=s2.dataset.tsrc; renderTaskEditor(); return; } const b=e.target.closest('[data-tact]'); if(!b) return; const a=b.dataset.tact; if(a==='cancel') closeTaskEditor(); else if(a==='save') tedSave(false); else if(a==='del') armConfirm(b,'Emin misin?',()=>tedSave(true)); });
+$('tedBg').addEventListener('click',closeTaskEditor);
 function armConfirm(btn,label,fn){
   if(btn.dataset.armed==='1'){ clearTimeout(btn._t); btn.dataset.armed=''; btn.textContent=btn.dataset.orig; fn(); return; }
   btn.dataset.orig=btn.textContent; btn.dataset.armed='1'; btn.textContent=label; btn._t=setTimeout(()=>{ btn.dataset.armed=''; btn.textContent=btn.dataset.orig; },3000);
@@ -1263,8 +1431,13 @@ $('joinBox').addEventListener('click',async e=>{
 $('joinBox').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const b=e.target.id==='invIn'?$('invBtn'):($('startBtn')||$('newBtn')); if(b){ e.preventDefault(); b.click(); } });
 $('groupsbar').addEventListener('click',e=>{ const b=e.target.closest('[data-gid]'); if(b){ GID=b.dataset.gid; lsSet('vird:gid',GID); bump(); afterMembers(); render(); return; } if(e.target.closest('[data-goto]')){ state.tab='aile'; savePrefs(); render(); window.scrollTo(0,0); } });
 $('people').addEventListener('click',e=>{ const b=e.target.closest('[data-mid]'); if(!b)return; state.view=b.dataset.mid; savePrefs(); render(); });
-$('tabbar').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(!b)return; const was=state.tab; state.tab=b.dataset.tab; if(was!==state.tab||PNAME[state.tab]) { if(PNAME[state.tab]) state.cursor=sod(new Date()); if(state.tab==='y'&&was!=='y') state.year=new Date().getFullYear(); } savePrefs(); render(); window.scrollTo(0,0); });
-$('view').addEventListener('toggle',e=>{ if(e.target.id==='esmaAll') esmaOpen=e.target.open; },true);
+$('tabbar').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(!b)return; const was=state.tab,t=b.dataset.tab; state.editMode=false;
+  if(t==='gorev'){ state.tab=state.per||'d'; state.cursor=sod(new Date()); }
+  else if(t==='bugun'){ state.tab='bugun'; state.cursor=sod(new Date()); state.view=ME||state.view; }
+  else { state.tab=t; if(t==='y'&&was!=='y') state.year=new Date().getFullYear(); }
+  savePrefs(); render(); window.scrollTo(0,0); enterAnim(); });
+function enterAnim(){ const v=$('view'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); }
+$('view').addEventListener('toggle',e=>{ if(e.target.id==='esmaAll') esmaOpen=e.target.open; if(e.target.id==='dAyet') state.openAyet=e.target.open; if(e.target.id==='ngForm') state.ngOpen=e.target.open; if(e.target.id==='dHadis') state.openHadis=e.target.open; },true);
 $('view').addEventListener('click',e=>{
   const nav=e.target.closest('[data-nav]');
   if(nav){ const n=+nav.dataset.nav;
@@ -1272,7 +1445,13 @@ $('view').addEventListener('click',e=>{
     else { const p=period(),c=shift(p,state.cursor,n); if(!isFuture(p,c)){ state.cursor=c; render(); } }
     return; }
   if(e.target.closest('[data-today]')){ if(state.tab==='y') state.year=new Date().getFullYear(); else state.cursor=sod(new Date()); render(); return; }
-  if(e.target.closest('[data-vk="ayar"]')){ openSettings(); setTimeout(()=>{ const x=$('vkSec'); if(x) x.scrollIntoView({block:'start'}); },60); return; }
+  const ps=e.target.closest('[data-per]'); if(ps){ state.tab=state.per=ps.dataset.per; state.cursor=sod(new Date()); state.editMode=false; savePrefs(); render(); return; }
+  const gp=e.target.closest('[data-goper]'); if(gp){ state.tab=state.per=gp.dataset.goper; state.cursor=sod(new Date()); state.view=ME; savePrefs(); render(); window.scrollTo(0,0); return; }
+  if(e.target.closest('[data-edit]')){ state.editMode=!state.editMode; render(); return; }
+  const te=e.target.closest('[data-tedit]'); if(te){ openTaskEditor(te.dataset.tedit||null,te.dataset.tper,te.dataset.tcat); return; }
+  const mv=e.target.closest('[data-mv]'); if(mv){ moveTask(mv.closest('li.task').dataset.id,+mv.dataset.mv); return; }
+  if(e.target.closest('[data-goto2]')){ state.tab='aile'; savePrefs(); render(); window.scrollTo(0,0); return; }
+  if(e.target.closest('[data-vk="ayar"]')){ openSettings('vakit'); return; }
   const gb=e.target.closest('[data-g],[data-gid2]');
   if(gb){
     if(gb.dataset.gid2){ GID=gb.dataset.gid2; lsSet('vird:gid',GID); bump(); afterMembers(); render(); return; }
@@ -1299,11 +1478,13 @@ $('view').addEventListener('click',e=>{
 
 /* ayarlar */
 let draft=null,sPrev=null;
-function openSettings(){
+function openSettings(sec){
   const G=state.groups[GID];
-  draft={vk:clone(VK),pt:clone(personalTasks(ME)),gt:G?clone(groupTasks(GID)):null,gname:G?String(G.name||''):'',managed:state.members.filter(m=>m.managed).map(m=>({id:m.id,name:m.nick})),rem:clone(REM),myname:myName()};
-  sPrev=document.activeElement; renderSheet(); $('sheet').hidden=false; $('sheetBg').hidden=false; document.body.style.overflow='hidden'; $('sheetX').focus();
+  draft={sec:typeof sec==='string'?sec:'',vk:clone(VK),pt:clone(personalTasks(ME)),gt:G?clone(groupTasks(GID)):null,gname:G?String(G.name||''):'',managed:state.members.filter(m=>m.managed).map(m=>({id:m.id,name:m.nick})),rem:clone(REM),myname:myName()};
+  sPrev=document.activeElement; draft.base=JSON.stringify(draftSig()); renderSheet(); $('sheet').hidden=false; $('sheetBg').hidden=false; document.body.style.overflow='hidden'; $('sheet').focus({preventScroll:true});
 }
+function draftSig(){ return draft?[draft.vk,draft.pt,draft.gt,draft.gname,draft.managed,draft.rem,draft.myname]:null; }
+function updateFoot(){ if(!draft) return; const dirty=JSON.stringify(draftSig())!==draft.base; $('sheetSave').hidden=!dirty; $('sheetCancel').textContent=dirty?'Vazgeç':'Kapat'; }
 function closeSettings(){ draft=null; $('sheet').hidden=true; $('sheetBg').hidden=true; document.body.style.overflow=''; if(sPrev&&document.contains(sPrev)) sPrev.focus(); }
 function taskEditor(t,i,L){
   const es=isEsma(t),at='data-l="'+L+'" data-ti="'+i+'"';
@@ -1315,14 +1496,34 @@ function taskEditor(t,i,L){
 }
 function listEditor(L,arr){ return ['d','w','m'].map(p=>'<h3 style="font-size:1rem">'+PNAME[p]+'</h3><ul class="ed-list">'+arr.map((t,i)=>[t,i]).filter(x=>x[0].period===p).map(x=>taskEditor(x[0],x[1],L)).join('')+'</ul><button class="link" data-act="addt" data-l="'+L+'" data-p="'+p+'">Görev ekle</button>').join(''); }
 const hm=r=>pad(r.h)+':'+pad(r.m);
+const SECS=[['profil','Profil','Adın'],['bildirim','Hatırlatmalar','Günlük ve haftalık bildirimler'],['vakit','Namaz vakitleri','Vakitler ve vakit bildirimleri'],['gorunum','Görünüm','Yazı boyutu ve tema'],['gorev','Görev listeleri','Toplu düzenleme'],['grup','Grup','Ad, telefonsuz üyeler, davet'],['telefon','Bu telefon','Verilerimi sil, sürüm']];
+function secSummary(k){
+  if(k==='profil') return draft.myname||'Adını yaz';
+  if(k==='vakit') return draft.vk.en?((draft.vk.mode==='konum'?'Konumun':(draft.vk.label||(draft.vk.ilce&&draft.vk.ilce.ad)||'Yer seçilmedi'))+', '+draft.vk.off+' dk önce'):'Kapalı';
+  if(k==='bildirim') return draft.rem.filter(r=>r.en).length+' / '+draft.rem.length+' açık';
+  if(k==='gorunum') return ({'0.9':'Küçük','1':'Normal','1.12':'Büyük','1.25':'Çok büyük'})[String(APP.fs)]+' yazı, '+({auto:'sistem teması',light:'açık tema',dark:'koyu tema'})[APP.theme];
+  if(k==='grup'){ const G=state.groups[GID]; return G?String(G.name||''):'Grubun yok'; }
+  if(k==='gorev') return 'Görevlerim'+(state.groups[GID]?' ve grup görevleri':'');
+  return 'Sürüm 1.0.'+(BUILD||0);
+}
 function renderSheet(focusSel){
-  const G=state.groups[GID];
-  let h='<h3>Adın</h3><input type="text" class="full-w" id="myName" value="'+esc(draft.myname)+'" maxlength="30" aria-label="Adın">';
-  h+='<h3>Bildirimler</h3>'+(state.notif&&state.notif!=='granted'?'<p class="err">'+(state.notif==='yok'?'Bildirimler sadece Android uygulamasında çalışır.':'Bildirim izni kapalı. Aşağıdan izin ver ya da telefon ayarlarından aç.')+'</p>'+(state.notif!=='yok'?'<p><button class="btn" data-act="perm">Bildirim izni ver</button></p>':''):'')+
+  const G=state.groups[GID],sec=draft.sec;
+  let h='';
+  $('sheetTitle').textContent=sec?(SECS.find(x=>x[0]===sec)||['','Ayarlar'])[1]:'Ayarlar';
+  if(!sec){
+    h+='<div>'+SECS.filter(x=>x[0]!=='grup'||G).map(([k,t])=>'<button class="srow" data-sec="'+k+'"><span><b>'+esc(t)+'</b><small>'+esc(secSummary(k))+'</small></span><i>›</i></button>').join('')+'</div>';
+    if(state.update) h+='<p class="ed-note">Yeni sürüm hazır: 1.0.'+state.update+'. <a href="'+esc(APK_URL)+'">İndir ve kur</a></p>';
+  } else {
+    h+='<button class="back" data-sec="">‹ Ayarlar</button>';
+    if(sec==='profil'){
+  h+='<h3>Adın</h3><input type="text" class="full-w" id="myName" value="'+esc(draft.myname)+'" maxlength="30" aria-label="Adın">';
+    } else if(sec==='bildirim'){
+  h+=''+(state.notif&&state.notif!=='granted'?'<p class="err">'+(state.notif==='yok'?'Bildirimler sadece Android uygulamasında çalışır.':'Bildirim izni kapalı. Aşağıdan izin ver ya da telefon ayarlarından aç.')+'</p>'+(state.notif!=='yok'?'<p><button class="btn" data-act="perm">Bildirim izni ver</button></p>':''):'')+
     '<div>'+draft.rem.map((r,i)=>'<div class="rem"><label><input type="checkbox" data-ri="'+i+'" data-f="en"'+(r.en?' checked':'')+'><span>'+esc(r.t)+'<small>'+esc(remDays(r))+'</small></span></label><input type="time" value="'+hm(r)+'" data-ri="'+i+'" data-f="time" aria-label="'+esc(r.t)+' saati"></div>').join('')+'</div><p class="ed-note">Bildirim saatleri sadece bu telefon için geçerlidir.</p>';
+    } else if(sec==='vakit'){
   {
     const v=draft.vk;
-    h+='<h3 id="vkSec">Namaz vakitleri</h3><label class="ed-row" style="gap:8px"><input type="checkbox" id="vkEn"'+(v.en?' checked':'')+'> Vakitleri göster ve vakitten önce bildirim gönder</label>';
+    h+='<label class="switch" id="vkSec"><span>Vakitleri göster ve vakitten önce bildirim gönder</span><input type="checkbox" id="vkEn"'+(v.en?' checked':'')+'></label>';
     if(v.en){
       h+='<div class="seg" role="group" aria-label="Yer seçimi" style="margin:10px 0"><button data-vkm="ilce" aria-pressed="'+(v.mode==='ilce')+'">İl / ilçe</button><button data-vkm="konum" aria-pressed="'+(v.mode==='konum')+'">Konumum</button></div>';
       if(v.mode==='ilce'){
@@ -1342,16 +1543,25 @@ function renderSheet(focusSel){
       h+='<div class="ed-row" style="margin-top:6px">'+VAKIT_BILDIRIM.map(k=>'<label><input type="checkbox" data-vks="'+k+'"'+(v.sel[k]?' checked':'')+'> '+VAKITN[k]+'</label>').join('')+'</div>';
     }
   }
+    } else if(sec==='gorunum'){
+      h+='<h3>Yazı boyutu</h3><div class="seg opts" role="group">'+[['0.9','Küçük'],['1','Normal'],['1.12','Büyük'],['1.25','Çok büyük']].map(([v,n])=>'<button data-fs="'+v+'" aria-pressed="'+(String(APP.fs)===v)+'" style="font-size:'+(+v)+'rem">'+n+'</button>').join('')+'</div>';
+      h+='<h3>Tema</h3><div class="seg opts" role="group">'+[['auto','Sistem'],['light','Açık'],['dark','Koyu']].map(([v,n])=>'<button data-th="'+v+'" aria-pressed="'+(APP.theme===v)+'">'+n+'</button>').join('')+'</div><p class="ed-note">Görünüm ayarları hemen uygulanır ve sadece bu telefon için geçerlidir.</p>';
+    } else if(sec==='gorev'){
+      h+='<p class="ed-note" style="margin-top:4px">Tek bir görevi değiştirmenin en kolay yolu: Görevler sekmesinde <b>Düzenle</b>\'ye bas ya da göreve basılı tut. Burada listeleri toplu düzenleyebilirsin.</p>';
   h+='<h3>Görevlerim</h3><p class="ed-note" style="margin-top:0">Sadece senin listen; bütün gruplarında aynı kalır.</p>'+listEditor('p',draft.pt)+'<p><button class="btn ghost danger" data-act="reset">Varsayılan listeme dön</button></p>';
+      if(G) h+='<h3>'+sharedLabel()+' görevler ('+esc(G.name||'')+')</h3><p class="ed-note" style="margin-top:0">Bu gruptaki herkesin ortak görevleri; tek kayıt tutulur, kim işaretlerse herkeste görünür.</p>'+listEditor('g',draft.gt);
+    } else if(sec==='grup'){
   if(G){
     h+='<h3>Grup: '+esc(G.name||'')+'</h3><input type="text" class="full-w" id="gNameEd" value="'+esc(draft.gname)+'" maxlength="40" aria-label="Grup adı">';
-    h+='<h3 style="font-size:1rem">'+sharedLabel()+' görevler</h3><p class="ed-note" style="margin-top:0">Bu gruptaki herkesin ortak görevleri; tek kayıt tutulur, kim işaretlerse herkeste görünür.</p>'+listEditor('g',draft.gt);
     if(draft.managed.length) h+='<h3 style="font-size:1rem">Telefonsuz üyeler</h3><ul class="ed-list">'+draft.managed.map((m,i)=>'<li class="ed-t"><input type="text" class="ed-name" value="'+esc(m.name)+'" data-mi="'+i+'" maxlength="30" aria-label="Ad"><div class="ed-row"><button class="btn ghost danger push" data-act="kick" data-mi="'+i+'">Çıkar</button></div></li>').join('')+'</ul>';
     h+='<p class="ed-row" style="margin-top:12px"><button class="btn" data-act="invite">Davet linki gönder</button><button class="btn ghost danger" data-act="leave">Gruptan ayrıl</button></p>';
   }
-  h+='<h3>Bu telefon</h3><button class="btn ghost danger" data-act="wipe">Verilerimi sil</button><p class="ed-note">Kayıtlarını, gruplardaki üyeliğini ve bu telefonun bağlantısını kalıcı olarak siler.</p>';
+    } else if(sec==='telefon'){
+  h+='<button class="btn ghost danger" data-act="wipe">Verilerimi sil</button><p class="ed-note">Kayıtlarını, gruplardaki üyeliğini ve bu telefonun bağlantısını kalıcı olarak siler.</p>';
   h+='<p class="ed-note">Vird sürüm 1.0.'+(BUILD||0)+(state.update?', yeni sürüm: 1.0.'+state.update:'')+'</p>';
-  const sb=$('sheetBody'),st=sb.scrollTop; sb.innerHTML=h; sb.scrollTop=st;
+    }
+  }
+  const sb=$('sheetBody'),st=sb.scrollTop; sb.innerHTML=h; sb.scrollTop=st; updateFoot();
   if(focusSel){ const el=$('sheetBody').querySelector(focusSel); if(el) el.focus(); }
 }
 function onDraft(e){
@@ -1370,9 +1580,12 @@ function onDraft(e){
   if(el.dataset.ti!==undefined){ const arr=el.dataset.l==='g'?draft.gt:draft.pt,t=arr&&arr[+el.dataset.ti]; if(!t) return; const f=el.dataset.f;
     if(f==='name')t.name=el.value; else if(f==='target')t.target=el.value; else if(f==='unit')t.unit=el.value; else if(f==='cat')t.cat=el.value; }
 }
-$('sheetBody').addEventListener('input',onDraft);
-$('sheetBody').addEventListener('change',onDraft);
+$('sheetBody').addEventListener('input',e=>{ onDraft(e); updateFoot(); });
+$('sheetBody').addEventListener('change',e=>{ onDraft(e); updateFoot(); });
 $('sheetBody').addEventListener('click',e=>{
+  const sc=e.target.closest('[data-sec]'); if(sc&&draft){ draft.sec=sc.dataset.sec; renderSheet(); $('sheetBody').scrollTop=0; return; }
+  const fsb=e.target.closest('[data-fs]'); if(fsb){ APP.fs=+fsb.dataset.fs; appSave(); applyApp(); renderSheet(); return; }
+  const thb=e.target.closest('[data-th]'); if(thb){ APP.theme=thb.dataset.th; appSave(); applyApp(); renderSheet(); return; }
   const b=e.target.closest('[data-act],[data-vkm]'); if(!b||!draft) return; const a=b.dataset.act,arr=b.dataset.l==='g'?draft.gt:draft.pt;
   if(b.dataset.vkm){ draft.vk.mode=b.dataset.vkm; renderSheet(); return; }
   if(a==='invite') sendInvite();
@@ -1410,7 +1623,7 @@ $('sheetX').addEventListener('click',closeSettings);
 $('sheetBg').addEventListener('click',closeSettings);
 $('btnSettings').addEventListener('click',openSettings);
 $('zBottom').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.id==='zIn'){ e.preventDefault(); const b=$('zBottom').querySelector('[data-z="setm"]'); if(b) b.click(); } });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(ted) closeTaskEditor(); else if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
 
 init();
 })();
