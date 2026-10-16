@@ -1,0 +1,43 @@
+rules_version = '2';
+// Vird: Firestore güvenlik kuralları. Firebase konsolu > Firestore > Kurallar sekmesine yapıştır.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isDevice(fid) {
+      return signedIn() && exists(/databases/$(database)/documents/families/$(fid)/devices/$(request.auth.uid));
+    }
+    function isDeviceAfter(fid) {
+      return signedIn() && existsAfter(/databases/$(database)/documents/families/$(fid)/devices/$(request.auth.uid));
+    }
+    function invite(t) { return get(/databases/$(database)/documents/invites/$(t)).data; }
+
+    match /invites/{token} {
+      allow get: if signedIn();
+      allow create: if isDevice(request.resource.data.fid) && request.resource.data.exp is int;
+    }
+
+    match /families/{fid} {
+      allow create: if signedIn() && request.resource.data.owner == request.auth.uid;
+      allow read: if isDevice(fid);
+      allow update: if isDeviceAfter(fid);
+
+      match /devices/{uid} {
+        allow read: if isDevice(fid);
+        allow create: if signedIn() && uid == request.auth.uid && (
+          getAfter(/databases/$(database)/documents/families/$(fid)).data.owner == request.auth.uid ||
+          (request.resource.data.invite is string &&
+           invite(request.resource.data.invite).fid == fid &&
+           invite(request.resource.data.invite).exp > request.time.toMillis()));
+        allow update, delete: if signedIn() && uid == request.auth.uid;
+      }
+      match /members/{mid} {
+        allow read: if isDevice(fid);
+        allow create, update, delete: if isDeviceAfter(fid);
+      }
+      match /logs/{id} {
+        allow read: if isDevice(fid);
+        allow create, update, delete: if isDeviceAfter(fid);
+      }
+    }
+  }
+}

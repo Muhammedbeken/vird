@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#173E73">
+<title>Vird daveti</title>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#173E73;color:#F3F7FA;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:420px;padding:28px 22px;text-align:center}
+  h1{font:700 2.4rem Georgia,serif;color:#E2B85C;margin:12px 0 4px}
+  p{color:#C3D3EC;margin:.4rem 0 1.2rem}
+  a.btn,button{display:block;width:100%;box-sizing:border-box;margin:10px 0;padding:14px;border-radius:12px;border:0;font:700 1.05rem inherit;text-decoration:none;cursor:pointer}
+  .p{background:#E2B85C;color:#173E73}
+  .s{background:rgba(255,255,255,.12);color:#fff}
+  ol{text-align:left;color:#C3D3EC;padding-left:1.2rem;font-size:.95rem}
+  small{color:#C3D3EC}
+</style>
+</head>
+<body>
+<main>
+  <svg width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><polygon id="st" fill="#E2B85C"/></svg>
+  <h1>Vird</h1>
+  <p>Ailene katılman için davet edildin.</p>
+  <a class="btn p" id="open" href="#">Vird'de aç</a>
+  <a class="btn s" id="apk" href="#">Vird yüklü değil mi? İndir</a>
+  <button class="s" id="copy">Davet linkini kopyala</button>
+  <ol>
+    <li>Vird yüklü değilse önce indirip kur (telefon "bilinmeyen kaynak" izni isteyebilir).</li>
+    <li>Sonra bu sayfaya dönüp <b>Vird'de aç</b>'a bas.</li>
+    <li>Açılmazsa linki kopyala, Vird'de “Davet linkin mi var?” kısmına yapıştır.</li>
+  </ol>
+  <small id="msg"></small>
+</main>
+<script>
+  // 8 köşeli yıldız
+  (function(){var R=46,r=R*0.7654,p=[];for(var i=0;i<16;i++){var a=(-90+i*22.5)*Math.PI/180,q=i%2?r:R;p.push((50+q*Math.cos(a)).toFixed(1)+','+(50+q*Math.sin(a)).toFixed(1));}document.getElementById('st').setAttribute('points',p.join(' '));})();
+  var PKG='com.vird.aile';
+  var t=(location.search.match(/[?&]t=([A-Za-z0-9]{10,40})/)||[])[1]||'';
+  var owner=location.hostname.split('.')[0], repo=location.pathname.split('/')[1]||'vird';
+  document.getElementById('apk').href='https://github.com/'+owner+'/'+repo+'/releases/latest/download/vird.apk';
+  var open=document.getElementById('open');
+  if(!t){ document.getElementById('msg').textContent='Bu linkte davet kodu yok. Davet gönderen kişiden yeni link iste.'; open.style.display='none'; }
+  else if(/Android/i.test(navigator.userAgent)){ open.href='intent://davet?t='+t+'#Intent;scheme=vird;package='+PKG+';end'; }
+  else { open.href='vird://davet?t='+t; }
+  document.getElementById('copy').onclick=function(){ var s=location.href; (navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(function(){ document.getElementById('msg').textContent='Link kopyalandı.'; },function(){ prompt('Linki kopyala:',s); }); };
+</script>
+</body>
+</html>
