@@ -42,6 +42,9 @@
 html{scroll-padding-top:calc(var(--safe-area-inset-top,env(safe-area-inset-top,0px)) + 64px);-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.45}
 [hidden]{display:none!important}
+html,body{overscroll-behavior-y:none}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:var(--safe-area-inset-top,env(safe-area-inset-top,0px));background:var(--bg);z-index:35;pointer-events:none}
+.appbar{-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button:disabled{opacity:.38;cursor:default}
 :focus-visible{outline:2.5px solid var(--cobalt);outline-offset:2px}
@@ -187,9 +190,11 @@ button:disabled{opacity:.38;cursor:default}
 
 .esma-all summary{cursor:pointer;padding:12px 14px;font-family:var(--serif);font-size:1.02rem;font-weight:600}
 .esma-all ol{margin:0;padding:0 14px 12px 3rem}
-.esma-all li{padding:5px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.esma-all li{padding:7px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr auto auto;column-gap:10px;align-items:baseline}
+.esma-all .em{grid-column:1/-1;font-size:.85rem;color:var(--ink-2);font-weight:400}
+.t-mean{display:block;font-size:.84rem;color:var(--ink-2);font-weight:400;line-height:1.3}
 .esma-all li.today{color:var(--cobalt);font-weight:700}
-.esma-all .ear{font-family:var(--ar);font-size:1.05rem;margin-left:auto}
+.esma-all .ear{font-family:var(--ar);font-size:1.05rem}
 .esma-all .eb{font-variant-numeric:tabular-nums;color:var(--ink-2);min-width:2.8rem;text-align:right}
 .status{margin-top:22px;color:var(--ink-2);font-size:.82rem;text-align:center}
 
@@ -498,7 +503,8 @@ function yearStats(u,y){
 function dname(id){ const m=state.members.find(x=>x.id===id); return (m&&m.nick)||(state.prof[id]&&state.prof[id].name)||(id===state.me?'Sen':'Aile üyesi'); }
 const PALETTE=['#1F4F92','#B23A2E','#3C7A3E','#A8711A','#6B4A8B','#12857D'];
 const colorOf=id=>{ const ms=state.members.slice().sort((a,b)=>a.since-b.since),i=ms.findIndex(m=>m.id===id); return PALETTE[(i<0?0:i)%PALETTE.length]; };
-const canEditTask=(t,u)=>!store.readOnly&&state.canWrite&&state.joined&&(t.scope==='aile'||(u===undefined?state.view:u)===state.me);
+const isManaged=id=>{ const m=state.members.find(x=>x.id===id); return !!(m&&m.managed); };
+const canEditTask=(t,u)=>!store.readOnly&&state.canWrite&&state.joined&&(t.scope==='aile'||(u===undefined?state.view:u)===state.me||isManaged(u===undefined?state.view:u));
 
 /* kayıt: Firebase */
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -525,7 +531,7 @@ function subscribe(){
   stopSubs(); famRef=db.collection('families').doc(FID);
   unsub.push(famRef.onSnapshot(s=>{ const d=s.data()||{}; if(!draft){ const ts=normTasks(d.tasks); if(ts&&ts.length) state.tasks=ts; } render(); },onErr));
   unsub.push(famRef.collection('members').onSnapshot(q=>{
-    state.members=q.docs.map(x=>{ const d=x.data()||{}; return {id:x.id,nick:String(d.name||''),since:+d.since||0}; }).sort((a,b)=>a.id===ME?-1:b.id===ME?1:a.since-b.since);
+    state.members=q.docs.map(x=>{ const d=x.data()||{}; return {id:x.id,nick:String(d.name||''),since:+d.since||0,managed:!!d.managed}; }).sort((a,b)=>a.id===ME?-1:b.id===ME?1:a.since-b.since);
     state.membersLoaded=true; afterMembers(); render();
   },onErr));
   unsub.push(famRef.collection('devices').doc(UID).onSnapshot(s=>{
@@ -583,11 +589,25 @@ async function startJoin(token){
     if(!inv.exists) throw new Error('yok');
     const d=inv.data()||{}; if((+d.exp||0)<Date.now()) throw new Error('süre');
     await db.collection('families').doc(d.fid).collection('devices').doc(UID).set({invite:token,mid:'',since:Date.now()});
-    FID=d.fid; ME=''; lsSet('vird:fid',FID); lsSet('vird:me',null); gate={mode:'ready'}; subscribe();
+    FID=d.fid; ME=''; lsSet('vird:fid',FID); lsSet('vird:me',null); lsSet('vird:inv',token); gate={mode:'ready'}; subscribe();
   }catch(e){ console.warn(e); gate={mode:'welcome',err:'Davet linki geçersiz ya da süresi dolmuş. Yeni bir davet iste.'}; }
   render();
 }
-function handleInvite(url){ const t=tokenOf(url); if(!t) return; if(FID){ toast('Bu telefon zaten bir ailede.'); return; } if(db&&UID) startJoin(t); else gate.pendingInvite=t; }
+function handleInvite(url){ const t=tokenOf(url); if(!t) return; if(FID){ offerSwitch(t); return; } if(db&&UID) startJoin(t); else gate.pendingInvite=t; }
+function offerSwitch(t){ if(t===lsGet('vird:inv')) return; state.switchInv=t; render(); }
+async function switchFamily(t){
+  state.switchInv=null; gate={mode:'join'}; render();
+  try{
+    const inv=await db.collection('invites').doc(t).get();
+    if(!inv.exists||(+(inv.data()||{}).exp||0)<Date.now()) throw new Error('gecersiz');
+    if((inv.data()||{}).fid===FID){ gate={mode:'ready'}; toast('Zaten bu ailedesin.'); render(); return; }
+    const old=FID; stopSubs();
+    try{ await Promise.race([db.collection('families').doc(old).collection('devices').doc(UID).delete(),sleep(5000)]); }catch(e){}
+    FID=''; ME=''; famRef=null; lsSet('vird:fid',null); lsSet('vird:me',null);
+    state.members=[]; state.logs={}; state.aile={}; state.membersLoaded=false; afterMembers();
+    await startJoin(t);
+  }catch(e){ console.warn(e); gate={mode:'ready'}; if(FID) subscribe(); toast('Davet linki geçersiz ya da süresi dolmuş.'); render(); }
+}
 async function pickMember(mid){ await famRef.collection('devices').doc(UID).set({mid},{merge:true}); ME=mid; lsSet('vird:me',mid); afterMembers(); state.view=mid; render(); }
 async function addSelf(name){
   const m=famRef.collection('members').doc(),b=db.batch();
@@ -669,7 +689,7 @@ async function init(){
     if(!u) u=(await auth.signInAnonymously()).user; UID=u.uid;
   }catch(e){ console.warn(e); gate={mode:'error',msg:'Bağlantı kurulamadı. İnternetini kontrol edip uygulamayı yeniden aç.'}; render(); return; }
   const inv=gate.pendingInvite;
-  if(FID){ gate={mode:'ready'}; subscribe(); if(inv) toast('Bu telefon zaten bir ailede.'); }
+  if(FID){ gate={mode:'ready'}; subscribe(); if(inv) offerSwitch(inv); }
   else if(inv) await startJoin(inv);
   else gate={mode:'welcome'};
   render(); checkUpdate();
@@ -678,7 +698,10 @@ async function init(){
 /* ---------- görünümler ---------- */
 function renderJoin(){
   const box=$('joinBox');
-  if(FID&&state.joined){ box.innerHTML=state.update?'<div class="card card-pad upd"><span>Yeni sürüm hazır (1.0.'+state.update+').</span><a href="'+esc(APK_URL)+'">İndir ve kur</a></div>':''; box.dataset.sig=''; return; }
+  if(FID&&state.joined){
+    let h2=state.update?'<div class="card card-pad upd"><span>Yeni sürüm hazır (1.0.'+state.update+').</span><a href="'+esc(APK_URL)+'">İndir ve kur</a></div>':'';
+    if(state.switchInv) h2+='<section class="card card-pad join"><h2 class="h2">Başka bir aileye davet edildin</h2><p class="muted">Bu telefon şu anda başka bir ailede. Davet edildiğin aileye geçersen şu anki ailendeki kayıtların orada kalır, yeni ailede listeden adını seçersin.</p><div class="join-row"><button class="btn plus" id="swYes">Aileye geç</button><button class="btn ghost" id="swNo">Vazgeç</button></div></section>';
+    const sg='j'+h2.length+(state.switchInv||''); if(box.dataset.sig!==sg){ box.dataset.sig=sg; box.innerHTML=h2; } return; }
   let sig,h;
   if(gate.mode==='config'){ sig='cfg'; h='<section class="card card-pad"><h2 class="h2">Kurulum eksik</h2><p class="muted">www/js/firebase-config.js dosyasına Firebase ayarlarını yapıştırman gerekiyor.</p></section>'; }
   else if(gate.mode==='error'){ sig='err'; h='<section class="card card-pad"><p class="err" style="margin:0">'+esc(gate.msg)+'</p></section>'; }
@@ -691,7 +714,7 @@ function renderJoin(){
   } else {
     sig='pick:'+state.members.map(m=>m.id+m.nick).join(',');
     h='<section class="card card-pad join"><h2 class="h2">Sen kimsin?</h2><p class="muted">Ailedeki adını seç ya da kendini ekle.</p>'+
-      (state.members.length?'<div class="cats" style="margin:0 0 12px">'+state.members.map(m=>'<button class="chip" data-pick="'+esc(m.id)+'"><span class="dot" style="background:'+esc(colorOf(m.id))+'"></span>'+esc(m.nick)+'</button>').join('')+'</div>':'')+
+      (state.members.some(m=>!m.managed)?'<div class="cats" style="margin:0 0 12px">'+state.members.filter(m=>!m.managed).map(m=>'<button class="chip" data-pick="'+esc(m.id)+'"><span class="dot" style="background:'+esc(colorOf(m.id))+'"></span>'+esc(m.nick)+'</button>').join('')+'</div>':'')+
       '<div class="join-row"><input type="text" id="joinName" placeholder="Adın" maxlength="30" aria-label="Adın"><button class="btn plus" id="joinBtn">Ekle</button></div></section>';
   }
   if(box.dataset.sig===sig) return; box.dataset.sig=sig; box.innerHTML=h;
@@ -744,10 +767,10 @@ function rowHTML(t,u,k){
 function esmaHTML(t,u,k,hideDone){
   const ids=esmaOfDay(state.cursor),ed=canEditTask(t),f=frac(t,u,k,state.cursor);
   let dn=0; for(const i of ids) if(val(t,u,k,'esma_'+(i+1))>=ESMA[i][2]) dn++;
-  let h='<li class="task'+(f>=0.9999?' done':'')+'" data-id="esma">'+ringHTML(f,t.cat)+'<div class="t-main"><span class="t-name">'+esc(t.name)+'</span><span class="t-val">'+dn+' / 3 isim, ebced sayısınca</span></div></li>';
+  let h='<li class="task'+(f>=0.9999?' done':'')+'" data-id="esma">'+ringHTML(f,t.cat)+'<div class="t-main"><span class="t-name">'+esc(t.name)+'</span><span class="t-val">'+dn+' / 3 isim</span></div></li>';
   for(const i of ids){ const e=ESMA[i],v=val(t,u,k,'esma_'+(i+1)),d=v>=e[2]; if(hideDone&&d) continue;
     const mo=ed?'<button class="t-main" data-act="open" aria-label="'+esc(e[0])+' sayacını aç">':'<div class="t-main">',mc=ed?'</button>':'</div>';
-    h+='<li class="task sub'+(d?' done':'')+'" data-id="esma" data-ei="'+i+'">'+ringHTML(Math.min(1,v/e[2]),t.cat)+mo+'<span class="t-name">'+esc(e[0])+' <span class="t-ar" lang="ar">'+e[1]+'</span></span><span class="t-val">'+NF.format(Math.floor(v))+' / '+NF.format(e[2])+'</span>'+mc+'<div class="t-ctl">'+(ed&&!d?'<button class="btn plus" data-act="open">Say</button>':'')+'</div></li>'; }
+    h+='<li class="task sub'+(d?' done':'')+'" data-id="esma" data-ei="'+i+'">'+ringHTML(Math.min(1,v/e[2]),t.cat)+mo+'<span class="t-name">'+esc(e[0])+' <span class="t-ar" lang="ar">'+e[1]+'</span></span><span class="t-mean">'+esc(ESMA_ANLAM[i]||'')+'</span><span class="t-val">'+NF.format(Math.floor(v))+' / '+NF.format(e[2])+'</span>'+mc+'<div class="t-ctl">'+(ed&&!d?'<button class="btn plus" data-act="open">Say</button>':'')+'</div></li>'; }
   return h;
 }
 function catPills(u,p,d){
@@ -767,7 +790,7 @@ function viewPeriod(){
   if(!u) return periodNav()+'<div class="card card-pad muted">Henüz kimse katılmadı.</div>';
   const c=comp(u,p,d); let sub,cls='sum-sub';
   if(p==='d'){ const n=streak(u); sub=n?'Tam gün serisi: '+n+' gün':'Günün tüm görevleri bitince seri başlar'; if(n)cls+=' streak'; } else sub=remainingText(p,d);
-  let h=periodNav()+'<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(dname(u))+(u!==state.me&&store.mode==='db'?', yalnızca izleme':'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bu dönem için görev yok')+'</p><p class="'+cls+'">'+esc(sub)+'</p></div></div>'+catPills(u,p,d)+historyHTML(u)+'</section>';
+  let h=periodNav()+'<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(dname(u))+(u!==state.me&&!isManaged(u)?', yalnızca izleme':'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bu dönem için görev yok')+'</p><p class="'+cls+'">'+esc(sub)+'</p></div></div>'+catPills(u,p,d)+historyHTML(u)+'</section>';
   if(p==='d'&&isCurrent('d',d)){ const tp=tipsFor(d); if(tp.length) h+='<section class="card card-pad tips"><h2 class="h2">Bugün için</h2><ul>'+tp.map(x=>'<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>').join('')+'</ul><p class="fine">Hicrî tarih Ümmü\'l-Kurâ takvimine göre; Diyanet takviminden bir gün farklı olabilir.</p></section>'; }
   const ts=state.tasks.filter(t=>t.period===p),hide=state.filter==='left';
   const left=ts.filter(t=>frac(t,u,k,d)<0.9999).length;
@@ -783,7 +806,7 @@ function viewPeriod(){
   h+=groups||'<section class="card"><p class="empty">'+(ts.length?'Bu dönemin tüm görevleri tamam. Allah kabul etsin.':'Bu dönem için görev yok.')+'</p></section>';
   if(p==='d'&&state.tasks.some(isEsma)){
     const today=new Set(esmaOfDay(d));
-    h+='<details class="card esma-all" id="esmaAll"'+(esmaOpen?' open':'')+'><summary>Esmâü\'l-Hüsnâ: 99 isim ve ebced sayıları</summary><ol>'+ESMA.map((e,i)=>'<li'+(today.has(i)?' class="today"':'')+'><span>'+esc(e[0])+'</span><span class="ear" lang="ar">'+e[1]+'</span><span class="eb">'+NF.format(e[2])+'</span></li>').join('')+'</ol></details>';
+    h+='<details class="card esma-all" id="esmaAll"'+(esmaOpen?' open':'')+'><summary>Esmâü\'l-Hüsnâ: 99 isim ve anlamları</summary><ol>'+ESMA.map((e,i)=>'<li'+(today.has(i)?' class="today"':'')+'><span class="en">'+esc(e[0])+'</span><span class="ear" lang="ar">'+e[1]+'</span><span class="eb">'+NF.format(e[2])+'</span><span class="em">'+esc(ESMA_ANLAM[i]||'')+'</span></li>').join('')+'</ol></details>';
   }
   return h;
 }
@@ -839,7 +862,8 @@ function viewAile(){
   const ms=state.members,now=sod(new Date()),y=now.getFullYear();
   if(!ms.length) return '<div class="card card-pad muted">Henüz kimse katılmadı.</div>';
   let avg=0; for(const m of ms) avg+=comp(m.id,'d',now).pct; avg/=ms.length;
-  let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="aileStar" data-p="'+avg.toFixed(4)+'"')+'<div><p class="sum-who">'+ms.length+' kişi</p><p class="sum-main">Ailenin bugünkü ortalaması</p><p class="sum-sub">'+esc(fDMl.format(now))+'</p></div></div></section><div style="height:14px"></div>';
+  let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="aileStar" data-p="'+avg.toFixed(4)+'"')+'<div><p class="sum-who">'+ms.length+' kişi</p><p class="sum-main">Ailenin bugünkü ortalaması</p><p class="sum-sub">'+esc(fDMl.format(now))+'</p></div></div></section>'+
+    '<section class="card card-pad" style="margin-top:14px"><h2 class="h2">Aileye ekle</h2><p class="muted small" style="margin:.2rem 0 10px">Kendi telefonu olan kişiye davet linki gönder. Telefonu olmayan biri için (örneğin çocuğun) sadece adını ekle; onun adına bu telefondan işaretleyebilirsin.</p><div class="join-row" style="flex-wrap:wrap"><button class="btn plus" data-aile="invite">Davet linki gönder</button><input type="text" id="addName" placeholder="Telefonu olmayan kişinin adı" maxlength="30" aria-label="Ad" style="flex:1;min-width:10rem"><button class="btn" data-aile="add">Ekle</button></div></section><div style="height:14px"></div>';
   for(const m of ms){
     const vals=[['Bugün',comp(m.id,'d',now).pct],['Bu hafta',comp(m.id,'w',now).pct],['Bu ay',comp(m.id,'m',now).pct],[String(y),yearStats(m.id,y).pct||0]];
     const s=streak(m.id);
@@ -912,7 +936,7 @@ function renderCounter(){
   const e=cs.ei!=null?ESMA[cs.ei]:null;
   $('zName').textContent=e?e[0]:I.t.name; $('zWho').textContent=(I.t.scope==='aile'?'Ailece':dname(cs.u))+(+sod(cs.d)===+sod(new Date())||!PNAME[period()]||period()!=='d'?'':', '+fDMl.format(cs.d));
   const ar=e?e[1]:(I.t.ar||''); $('zAr').textContent=ar; $('zAr').hidden=!ar;
-  $('zHint').textContent=I.done?'':I.dk?'Yıldıza dokun: başlat ya da durdur':e?'Ebced sayısı '+NF.format(e[2])+'. Her dokunuş bir zikir.':'Her dokunuş bir sayar.';
+  $('zHint').textContent=I.done?'':I.dk?'Yıldıza dokun: başlat ya da durdur':e?(ESMA_ANLAM[cs.ei]||'Her dokunuş bir zikir.'):'Her dokunuş bir sayar.';
   $('zNum').textContent=I.dk?mmss(I.v):NF.format(Math.floor(I.v)); $('zOf').textContent='/ '+(I.dk?mmss(I.T):NF.format(I.T));
   setStar($('zStar'),I.v/I.T);
   $('zTap').setAttribute('aria-label',I.done?'Tamamlandı':I.dk?(I.run?'Durdur':'Başlat'):'Bir say');
@@ -955,6 +979,8 @@ function armConfirm(btn,label,fn){
 
 /* etkileşim */
 $('joinBox').addEventListener('click',async e=>{
+  if(e.target.closest('#swYes')){ const t=state.switchInv; if(t) switchFamily(t); return; }
+  if(e.target.closest('#swNo')){ state.switchInv=null; render(); return; }
   const name=()=>(($('joinName')||{}).value||'').trim().slice(0,30);
   if(e.target.closest('#startBtn')){ const n=name(); if(!n){ toast('Adını yaz.'); $('joinName').focus(); return; } e.target.closest('#startBtn').disabled=true; try{ await createFamily(n); toast('Hoş geldin, '+n+'.'); }catch(err){ console.warn(err); toast('Başlatılamadı. İnternetini kontrol et.'); render(); } return; }
   if(e.target.closest('#invBtn')){ const t=tokenOf(($('invIn').value||'').trim()); if(!t){ toast('Geçerli bir davet linki yapıştır.'); return; } await startJoin(t); return; }
@@ -973,6 +999,8 @@ $('view').addEventListener('click',e=>{
     else { const p=period(),c=shift(p,state.cursor,n); if(!isFuture(p,c)){ state.cursor=c; render(); } }
     return; }
   if(e.target.closest('[data-today]')){ if(state.tab==='y') state.year=new Date().getFullYear(); else state.cursor=sod(new Date()); render(); return; }
+  const ab=e.target.closest('[data-aile]');
+  if(ab){ if(ab.dataset.aile==='invite') sendInvite(); else { const n=(($('addName')||{}).value||'').trim().slice(0,30); if(!n){ toast('Bir ad yaz.'); return; } famRef.collection('members').doc().set({name:n,since:Date.now(),managed:true}).catch(()=>toast('Eklenemedi.')); toast(n+' eklendi.'); $('addName').value=''; } return; }
   const fb=e.target.closest('[data-filter]'); if(fb){ state.filter=fb.dataset.filter; savePrefs(); render(); return; }
   const ap=e.target.closest('[data-ap]'); if(ap){ state.aileP=ap.dataset.ap; render(); return; }
   const hc=e.target.closest('.hc[data-t]'); if(hc){ state.tab='d'; state.cursor=parseIso(hc.dataset.t); savePrefs(); render(); window.scrollTo(0,0); return; }
@@ -994,7 +1022,7 @@ function closeSettings(){ draft=null; $('sheet').hidden=true; $('sheetBg').hidde
 function taskEditor(t,i){
   const es=isEsma(t);
   return '<li class="ed-t"><input type="text" class="ed-name" value="'+esc(t.name)+'" data-ti="'+i+'" data-f="name" placeholder="Görev adı" aria-label="Görev adı">'+
-    '<div class="ed-row">'+(es?'<span class="ed-note" style="margin:0">Her gün 3 isim, ebced sayısınca</span>':
+    '<div class="ed-row">'+(es?'<span class="ed-note" style="margin:0">Her gün 3 isim</span>':
     '<label>Hedef <input type="number" min="1" inputmode="numeric" value="'+esc(t.target)+'" data-ti="'+i+'" data-f="target"></label><select data-ti="'+i+'" data-f="unit" aria-label="Birim">'+UNITS.map(x=>'<option value="'+x[0]+'"'+(x[0]===t.unit?' selected':'')+'>'+x[1]+'</option>').join('')+'</select>')+
     '<select data-ti="'+i+'" data-f="cat" aria-label="Kategori">'+CATS.map(c=>'<option value="'+c[0]+'"'+(c[0]===t.cat?' selected':'')+'>'+c[1]+'</option>').join('')+'</select>'+
     (es?'':'<label><input type="checkbox" data-ti="'+i+'" data-f="aile"'+(t.scope==='aile'?' checked':'')+'> Ailece</label>')+
@@ -1008,6 +1036,7 @@ function renderSheet(focusSel){
   h+='<h3>Aile üyeleri</h3><ul class="ed-list">'+draft.members.map((m,i)=>'<li class="ed-t"><input type="text" class="ed-name" value="'+esc(m.name)+'" data-mi="'+i+'" maxlength="30" aria-label="Ad"><div class="ed-row">'+(m.id===ME?'<span class="small muted">sen</span>':'<button class="btn ghost danger push" data-act="kick" data-mi="'+i+'">Çıkar</button>')+'</div></li>').join('')+'</ul>';
   for(const p of ['d','w','m']) h+='<h3>'+PNAME[p]+' görevler</h3><ul class="ed-list">'+draft.tasks.map((t,i)=>[t,i]).filter(x=>x[0].period===p).map(x=>taskEditor(x[0],x[1])).join('')+'</ul><button class="link" data-act="addt" data-p="'+p+'">Görev ekle</button>';
   h+='<p class="ed-note">Görev listesi tüm aile için ortaktır. “Ailece” görevler tek kayıttır, kim işaretlerse herkeste görünür.</p><p><button class="btn ghost danger" data-act="reset">Varsayılan görev listesine dön</button></p>';
+  h+='<h3>Başka aileye katıl</h3><div class="join-row"><input type="text" id="swIn" placeholder="Davet linkini yapıştır" aria-label="Davet linki"><button class="btn" data-act="swjoin">Katıl</button></div>';
   h+='<h3>Bu telefon</h3><div class="ed-row"><button class="btn" data-act="switch">Kişiyi değiştir</button><button class="btn ghost danger" data-act="wipe">Verilerimi sil</button></div><p class="ed-note">“Verilerimi sil” senin kayıtlarını ve bu telefonun aile bağlantısını kalıcı olarak siler.</p>';
   h+='<p class="ed-note">Vird sürüm 1.0.'+(BUILD||0)+(state.update?' · yeni sürüm: 1.0.'+state.update:'')+'</p>';
   $('sheetBody').innerHTML=h;
@@ -1025,6 +1054,7 @@ $('sheetBody').addEventListener('change',onDraft);
 $('sheetBody').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]'); if(!b||!draft) return; const a=b.dataset.act;
   if(a==='invite') sendInvite();
+  else if(a==='swjoin'){ const t=tokenOf(($('swIn').value||'').trim()); if(!t){ toast('Geçerli bir davet linki yapıştır.'); return; } closeSettings(); offerSwitch(t); }
   else if(a==='perm') scheduleReminders(true).then(()=>{ if(draft) renderSheet(); });
   else if(a==='addt'){ draft.tasks.push({id:uid('t'),name:'',period:b.dataset.p,target:1,unit:'kez',scope:'kisi',cat:'diger'}); renderSheet('[data-ti="'+(draft.tasks.length-1)+'"][data-f="name"]'); }
   else if(a==='delt'){ draft.tasks.splice(+b.dataset.ti,1); renderSheet(); }
