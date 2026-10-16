@@ -337,6 +337,7 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .task.edit .t-main{cursor:pointer}
 .fl{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--ink-2);margin-top:12px}
 .fl input,.fl select{width:100%}
+.ed-row label.fl{align-items:stretch;text-align:left}
 .ted{max-width:560px}
 .srow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:13px 2px;border-top:1px solid var(--line);font:inherit;color:inherit;text-align:left}
 .srow:first-child{border-top:0}
@@ -347,6 +348,10 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .opts button{flex:1;min-width:5.5rem}
 .vakit{margin-top:14px}
+.vsel{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:12px}
+.vsel label{display:flex;align-items:center;gap:8px;font-size:.95rem}
+.vsel input:disabled+*,.vsel label:has(input:disabled){opacity:.5}
+select:disabled{opacity:.5}
 .vakit .vh{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .vgrid .v{background:var(--surface-2);border-radius:10px;padding:8px 10px}
@@ -864,13 +869,13 @@ async function scheduleReminders(ask){
         } else if(!r.days.includes(wd)) continue;
         list.push(Object.assign({id:3000+i*10+r.id,title,body,schedule:{at,allowWhileIdle:true}},ic));
       }
-      if(vkReady()&&VKT&&VKT.key===vkKey()){
+      if(vkNotify()&&VKT&&VKT.key===vkKey()){
         const day=VKT.days[iso(d)];
         if(day) VAKIT_BILDIRIM.forEach((k,vi)=>{
           if(!VK.sel[k]) return; const hm2=String(day[k]||'').split(':').map(Number); if(hm2.length!==2||isNaN(hm2[0])||isNaN(hm2[1])) return;
           const at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),hm2[0],hm2[1]-VK.off); if(+at<=now) return;
           const nm=k==='ogle'&&d.getDay()===5?'Cuma (öğle)':VAKITN[k];
-          list.push(Object.assign({id:5000+i*10+vi,title:nm+' vaktine '+VK.off+' dakika kaldı',body:nm+' vakti '+day[k]+' saatinde giriyor'+(VK.label?' ('+VK.label+')':'')+'.',schedule:{at,allowWhileIdle:true}},ic));
+          list.push(Object.assign({id:5000+i*10+vi,title:nm+' vaktine '+VK.off+' dakika kaldı',body:nm+' vakti '+day[k]+' saatinde giriyor ('+vkLabel()+').',schedule:{at,allowWhileIdle:true}},ic));
         });
       }
     }
@@ -880,62 +885,85 @@ async function scheduleReminders(ask){
 let remDone=false;
 function firstReminders(){ if(remDone) return; remDone=true; scheduleReminders(!lsGet('vird:remAsked')); lsSet('vird:remAsked','1'); }
 
-/* namaz vakitleri */
+/* namaz vakitleri (il/ilçe seçimiyle, Diyanet vakitleri) */
 const VAKIT=[['imsak','İmsak'],['gunes','Güneş'],['ogle','Öğle'],['ikindi','İkindi'],['aksam','Akşam'],['yatsi','Yatsı']];
 const VAKITN=Object.fromEntries(VAKIT);
 const VAKIT_BILDIRIM=['imsak','ogle','ikindi','aksam','yatsi'];
-function vkLoad(){ let x=null; try{ x=JSON.parse(lsGet('vird:vk')||'null'); }catch(e){} return Object.assign({en:false,mode:'ilce',off:30,sel:{imsak:true,ogle:true,ikindi:true,aksam:true,yatsi:true},il:null,ilce:null,lat:null,lng:null,label:''},x||{}); }
+const fold=x=>String(x||'').toLocaleUpperCase('tr-TR').replace(/[ÇĞİIÖŞÜÂÎÛ]/g,c=>({'Ç':'C','Ğ':'G','İ':'I','I':'I','Ö':'O','Ş':'S','Ü':'U','Â':'A','Î':'I','Û':'U'}[c])).replace(/[^A-Z0-9]/g,'');
+const trTitle=x=>String(x||'').toLocaleLowerCase('tr-TR').replace(/(^|[\s\-\/(])(\S)/g,(m,a,b)=>a+b.toLocaleUpperCase('tr-TR'));
+const ilIlceleri=il=>{ const r=ILLER.find(x=>x[0]===il); return r?r[1]:[]; };
+function vkLoad(){
+  let x=null; try{ x=JSON.parse(lsGet('vird:vk')||'null'); }catch(e){}
+  const v=Object.assign({en:false,off:30,sel:{imsak:true,ogle:true,ikindi:true,aksam:true,yatsi:true},il:'',ilce:''},x||{});
+  // eski kayıt biçimini dönüştür (konum seçeneği kaldırıldı)
+  if(v.il&&typeof v.il==='object') v.il=v.il.ad||''; if(v.ilce&&typeof v.ilce==='object') v.ilce=v.ilce.ad||'';
+  const il=ILLER.find(r=>fold(r[0])===fold(v.il)); v.il=il?il[0]:'';
+  const ic=il&&il[1].find(n=>fold(n)===fold(v.ilce)); v.ilce=ic||'';
+  delete v.mode; delete v.lat; delete v.lng; delete v.label;
+  if(![15,20,30,45,60].includes(+v.off)) v.off=30;
+  return v;
+}
 let VK=vkLoad(); const vkSave=()=>lsSet('vird:vk',JSON.stringify(VK));
-let VKT=null; try{ VKT=JSON.parse(lsGet('vird:vkt')||'null'); }catch(e){}
-const vkKey=(v)=>{ v=v||VK; return v.mode==='konum'?'k:'+(+v.lat).toFixed(2)+','+(+v.lng).toFixed(2):'i:'+((v.ilce&&v.ilce.id)||''); };
-const vkReady=()=>VK.en&&((VK.mode==='ilce'&&VK.ilce)||(VK.mode==='konum'&&VK.lat!=null));
-const trTitle=s=>String(s||'').toLocaleLowerCase('tr-TR').replace(/(^|[\s\-\/(])(\S)/g,(m,a,b)=>a+b.toLocaleUpperCase('tr-TR'));
+let VKT=null; try{ VKT=JSON.parse(lsGet('vird:vkt2')||'null'); }catch(e){}
+const vkKey=v=>{ v=v||VK; return fold(v.il)+'|'+fold(v.ilce); };
+const vkReady=()=>!!(VK.il&&VK.ilce);
+const vkNotify=()=>!!(VK.en&&vkReady());
+const vkLabel=v=>{ v=v||VK; return !v.il?'':(v.ilce&&v.ilce!=='Merkez'?v.ilce+', '+v.il:v.il+' (merkez)'); };
 async function httpGet(url){
   const H=Plug('CapacitorHttp');
-  if(H){ const r=await H.get({url,headers:{Accept:'application/json'}}); if(r.status<200||r.status>=300) throw new Error('HTTP '+r.status); return typeof r.data==='string'?JSON.parse(r.data):r.data; }
+  if(H){ const r=await H.get({url,headers:{Accept:'application/json'},connectTimeout:15000,readTimeout:15000}); if(r.status<200||r.status>=300) throw new Error('HTTP '+r.status); return typeof r.data==='string'?JSON.parse(r.data):r.data; }
   const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json();
 }
 const EZ='https://ezanvakti.emushaf.net';
-let SEHIRLER=null; const ILCELER={};
-async function ezSehirler(){ if(SEHIRLER) return SEHIRLER; const a=await httpGet(EZ+'/sehirler/2'); SEHIRLER=(a||[]).map(x=>({id:String(x.SehirID),ad:trTitle(x.SehirAdi)})).sort((a,b)=>a.ad.localeCompare(b.ad,'tr')); return SEHIRLER; }
-async function ezIlceler(sid){ if(ILCELER[sid]) return ILCELER[sid]; const a=await httpGet(EZ+'/ilceler/'+sid); return ILCELER[sid]=(a||[]).map(x=>({id:String(x.IlceID),ad:trTitle(x.IlceAdi)})).sort((a,b)=>a.ad.localeCompare(b.ad,'tr')); }
+const ILCE_ALIAS={KAHRAMANKAZAN:'KAZAN'};
+const IL_ALIAS={AFYONKARAHISAR:['AFYON'],KAHRAMANMARAS:['KMARAS','MARAS'],MERSIN:['ICEL'],SANLIURFA:['URFA']};
+async function resolveDiyanet(il,ilce){
+  let cache={}; try{ cache=JSON.parse(lsGet('vird:dyn')||'{}'); }catch(e){}
+  const ck=fold(il)+'|'+fold(ilce); if(cache[ck]) return cache[ck];
+  const cs=await httpGet(EZ+'/sehirler/2');
+  const names=[fold(il)].concat(IL_ALIAS[fold(il)]||[]);
+  const c=(cs||[]).find(x=>names.includes(fold(x.SehirAdi)))||(cs||[]).find(x=>names.includes(fold(x.SehirAdiEn)));
+  if(!c) throw new Error('il bulunamadı');
+  const ds=await httpGet(EZ+'/ilceler/'+c.SehirID)||[];
+  const want=ILCE_ALIAS[fold(ilce)]||fold(ilce);
+  let d=ilce!=='Merkez'&&ds.find(x=>fold(x.IlceAdi)===want||fold(x.IlceAdiEn)===want),center=false;
+  if(!d){ d=ds.find(x=>fold(x.IlceAdi)===fold(c.SehirAdi))||ds.find(x=>names.includes(fold(x.IlceAdi)))||ds.find(x=>fold(x.IlceAdi)==='MERKEZ')||ds[0]; center=ilce!=='Merkez'; }
+  if(!d) throw new Error('ilçe bulunamadı');
+  const r={iid:String(d.IlceID),center,dname:trTitle(d.IlceAdi)}; cache[ck]=r; lsSet('vird:dyn',JSON.stringify(cache)); return r;
+}
 const hhmm=x=>{ const m=String(x||'').match(/(\d{1,2}):(\d{2})/); return m?pad(+m[1])+':'+m[2]:''; };
 async function fetchVakitler(){
-  const days={}; let src='';
-  if(VK.mode==='ilce'&&VK.ilce&&!String(VK.ilce.id).startsWith('x')){
-    try{
-      const a=await httpGet(EZ+'/vakitler/'+VK.ilce.id);
-      for(const d of (a||[])){ const p=String(d.MiladiTarihKisa||'').split('.'); if(p.length!==3) continue;
-        const v={imsak:hhmm(d.Imsak),gunes:hhmm(d.Gunes),ogle:hhmm(d.Ogle),ikindi:hhmm(d.Ikindi),aksam:hhmm(d.Aksam),yatsi:hhmm(d.Yatsi)};
-        if(v.imsak&&v.yatsi) days[p[2]+'-'+pad(+p[1])+'-'+pad(+p[0])]=v; }
-      if(Object.keys(days).length) src='diyanet';
-    }catch(e){ console.warn('ezanvakti',e); }
-  }
+  const days={}; let src='',info=null;
+  try{
+    info=await resolveDiyanet(VK.il,VK.ilce);
+    const a=await httpGet(EZ+'/vakitler/'+info.iid);
+    for(const d of (a||[])){ const p=String(d.MiladiTarihKisa||'').split('.'); if(p.length!==3) continue;
+      const v={imsak:hhmm(d.Imsak),gunes:hhmm(d.Gunes),ogle:hhmm(d.Ogle),ikindi:hhmm(d.Ikindi),aksam:hhmm(d.Aksam),yatsi:hhmm(d.Yatsi)};
+      if(v.imsak&&v.ogle&&v.yatsi) days[p[2]+'-'+pad(+p[1])+'-'+pad(+p[0])]=v; }
+    if(Object.keys(days).length) src='diyanet';
+  }catch(e){ console.warn('Diyanet vakitleri',e); }
   if(!src){
-    const n=new Date(),n2=new Date(n.getFullYear(),n.getMonth()+1,1);
+    const n=new Date(),n2=new Date(n.getFullYear(),n.getMonth()+1,1),adr=(VK.ilce&&VK.ilce!=='Merkez'?VK.ilce+', ':'')+VK.il+', Türkiye';
     for(const [y,m] of [[n.getFullYear(),n.getMonth()+1],[n2.getFullYear(),n2.getMonth()+1]]){
-      const url=VK.mode==='konum'&&VK.lat!=null
-        ?'https://api.aladhan.com/v1/calendar/'+y+'/'+m+'?latitude='+VK.lat+'&longitude='+VK.lng+'&method=13'
-        :'https://api.aladhan.com/v1/calendarByAddress/'+y+'/'+m+'?address='+encodeURIComponent(((VK.ilce&&VK.ilce.ad)||'')+', '+((VK.il&&VK.il.ad)||'')+', Türkiye')+'&method=13';
-      const j=await httpGet(url);
+      const j=await httpGet('https://api.aladhan.com/v1/calendarByAddress/'+y+'/'+m+'?address='+encodeURIComponent(adr)+'&method=13');
       for(const d of ((j&&j.data)||[])){ const g=String((d.date&&d.date.gregorian&&d.date.gregorian.date)||'').split('-'); if(g.length!==3) continue; const T=d.timings||{};
         days[g[2]+'-'+g[1]+'-'+g[0]]={imsak:hhmm(T.Fajr),gunes:hhmm(T.Sunrise),ogle:hhmm(T.Dhuhr),ikindi:hhmm(T.Asr),aksam:hhmm(T.Maghrib),yatsi:hhmm(T.Isha)}; }
     }
     src='hesap';
   }
   if(!Object.keys(days).length) throw new Error('vakit bulunamadı');
-  VKT={key:vkKey(),src,days,at:Date.now()}; lsSet('vird:vkt',JSON.stringify(VKT));
+  VKT={key:vkKey(),src,center:!!(info&&info.center&&src==='diyanet'),dname:info&&info.dname||'',days,at:Date.now()}; lsSet('vird:vkt2',JSON.stringify(VKT));
 }
 let vkBusy=false;
 async function ensureVakitler(force){
   if(!vkReady()||vkBusy) return;
   const need=iso(addDays(sod(new Date()),7));
-  if(!force&&VKT&&VKT.key===vkKey()&&VKT.days[need]) return;
-  vkBusy=true;
-  try{ await fetchVakitler(); state.vkErr=''; }catch(e){ console.warn(e); state.vkErr='Namaz vakitleri alınamadı. İnternet bağlantını kontrol et.'; }
+  const stale=VKT&&VKT.src==='hesap'&&Date.now()-(+VKT.at||0)>6*3600e3;
+  if(!force&&!stale&&VKT&&VKT.key===vkKey()&&VKT.days[need]) return;
+  vkBusy=true; state.vkErr=''; if(!VKT||VKT.key!==vkKey()) render();
+  try{ await fetchVakitler(); }catch(e){ console.warn(e); state.vkErr='Namaz vakitleri alınamadı. İnternet bağlantını kontrol et; uygulama tekrar deneyecek.'; }
   vkBusy=false; render(); scheduleReminders(false);
 }
-function getKonum(){ return new Promise((res,rej)=>{ if(!navigator.geolocation) return rej(new Error('yok')); navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(4),lng:+p.coords.longitude.toFixed(4)}),rej,{enableHighAccuracy:false,timeout:20000,maximumAge:3600000}); }); }
 function nextVakit(day){
   const n=new Date(),cur=n.getHours()*60+n.getMinutes();
   for(const [k,nm] of VAKIT){ const a=String(day[k]||'').split(':').map(Number); if(a.length!==2) continue; const t=a[0]*60+a[1]; if(t>cur) return {k,nm,left:t-cur}; }
@@ -943,18 +971,23 @@ function nextVakit(day){
   return null;
 }
 const kalanTxt=m=>m>=60?Math.floor(m/60)+' sa '+(m%60)+' dk':m+' dk';
-function vakitHTML(d){
-  if(!VK.en) return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn" data-vk="ayar">Ayarla</button></div><p class="small muted" style="margin:6px 0 0">İl ve ilçeni seç ya da konumunu kullan; vakitleri görür, her vakitten önce bildirim alırsın.</p></section>';
-  const day=VKT&&VKT.key===vkKey()&&VKT.days[iso(d)];
-  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><h2 class="h2">Namaz vakitleri</h2><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||(vkReady()?'Vakitler yükleniyor…':'Ayarlar\'dan il/ilçe ya da konum seç.'))+'</p></section>'; }
-  ensureVakitler();
-  const isToday=+sod(d)===+sod(new Date()),nx=isToday?nextVakit(day):null;
-  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><span class="small muted">'+esc(VK.label||'')+'</span></div><div class="vgrid">'+
-    VAKIT.map(([k,nm])=>'<div class="v'+(nx&&nx.k===k?' next':'')+'"><span>'+(k==='ogle'&&d.getDay()===5?'Cuma':nm)+'</span><b>'+esc(day[k]||'–')+'</b></div>').join('')+'</div>'+
-    (nx?'<p class="vnext" id="vkNext">'+esc((nx.k==='ogle'&&d.getDay()===5?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left))+'</p>':'')+
-    '<p class="fine">'+(VKT.src==='diyanet'?'Kaynak: Diyanet İşleri Başkanlığı vakitleri.':'Vakitler hesaplamayla bulundu; Diyanet takviminden birkaç dakika farklı olabilir. Tam uyum için il ve ilçe seç.')+'</p></section>';
+function vkSourceNote(){
+  if(!VKT) return '';
+  if(VKT.src==='diyanet') return 'Kaynak: Diyanet İşleri Başkanlığı.'+(VKT.center?' Diyanet '+VK.ilce+' için ayrı vakit yayımlamıyor; '+VK.il+' merkez vakitleri gösteriliyor.':'');
+  return 'Diyanet servisine şu an ulaşılamadı; vakitler hesaplamayla bulundu ve birkaç dakika farklı olabilir. Bağlantı gelince Diyanet vakitlerine dönülür.';
 }
-setInterval(()=>{ const el=document.getElementById('vkNext'); if(!el||!VKT) return; const day=VKT.days[iso(new Date())]; if(!day) return; const nx=nextVakit(day); if(nx) el.textContent=(nx.k==='ogle'&&new Date().getDay()===5?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left); else el.textContent=''; },30000);
+function vakitHTML(d){
+  if(!vkReady()) return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn" data-vk="ayar">Ayarla</button></div><p class="small muted" style="margin:6px 0 0">'+(VK.en?'İlini ve ilçeni seç; vakitleri görür, her vakitten önce bildirim alırsın.':'İlini ve ilçeni seç; vakitleri görür, istersen her vakitten önce bildirim alırsın.')+'</p></section>';
+  const day=VKT&&VKT.key===vkKey()&&VKT.days[iso(d)];
+  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><span class="small muted">'+esc(vkLabel())+'</span></div><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
+  ensureVakitler();
+  const isToday=+sod(d)===+sod(new Date()),nx=isToday?nextVakit(day):null,cuma=d.getDay()===5;
+  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><span class="small muted">'+esc(vkLabel())+'</span></div><div class="vgrid">'+
+    VAKIT.map(([k,nm])=>'<div class="v'+(nx&&!nx.tom&&nx.k===k?' next':'')+'"><span>'+(k==='ogle'&&cuma?'Cuma':nm)+'</span><b>'+esc(day[k]||'–')+'</b></div>').join('')+'</div>'+
+    (nx?'<p class="vnext" id="vkNext">'+esc((nx.tom?'Yarın ':'')+(nx.k==='ogle'&&cuma?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left))+'</p>':'')+
+    '<p class="fine">'+esc(vkSourceNote())+'</p></section>';
+}
+setInterval(()=>{ const el=document.getElementById('vkNext'); if(!el||!VKT) return; const day=VKT.days[iso(new Date())]; if(!day) return; const nx=nextVakit(day); el.textContent=nx?(nx.tom?'Yarın ':'')+(nx.k==='ogle'&&new Date().getDay()===5?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left):''; },30000);
 
 async function checkUpdate(){
   if(!REPO||!BUILD) return;
@@ -1280,6 +1313,7 @@ function newGroupForm(open){
 function viewAile(){
   if(!state.joined) return '';
   const gs=myGroups(),now=sod(new Date()),y=now.getFullYear();
+  if(GID&&!state.groups[GID]&&(state.gidHold===GID||((state.people[ME]||{}).groups||[]).includes(GID))) return '<p class="note muted" style="padding:24px 4px">Grup yükleniyor…</p>';
   if(!gs.length||!state.groups[GID]){
     return '<section class="hero"><p class="sum-main" style="margin:0">Henüz bir grubun yok</p><p class="sum-sub">Ailenle, arkadaşlarınla ya da istediğin kişilerle grup kur; herkes birbirinin ilerlemesini görsün. İstediğin kadar grubun olabilir.</p></section><div style="height:14px"></div>'+newGroupForm(true)+
       '<section class="card card-pad" style="margin-top:14px"><h2 class="h2">Davet linkin mi var?</h2><div class="join-row" style="margin-top:8px"><input type="text" id="invIn2" placeholder="Davet linkini yapıştır" aria-label="Davet linki"><button class="btn" data-g="paste">Katıl</button></div></section>';
@@ -1452,6 +1486,7 @@ $('view').addEventListener('click',e=>{
   const mv=e.target.closest('[data-mv]'); if(mv){ moveTask(mv.closest('li.task').dataset.id,+mv.dataset.mv); return; }
   if(e.target.closest('[data-goto2]')){ state.tab='aile'; savePrefs(); render(); window.scrollTo(0,0); return; }
   if(e.target.closest('[data-vk="ayar"]')){ openSettings('vakit'); return; }
+  if(e.target.closest('[data-vk="tekrar"]')){ state.vkErr=''; ensureVakitler(true); return; }
   const gb=e.target.closest('[data-g],[data-gid2]');
   if(gb){
     if(gb.dataset.gid2){ GID=gb.dataset.gid2; lsSet('vird:gid',GID); bump(); afterMembers(); render(); return; }
@@ -1499,7 +1534,7 @@ const hm=r=>pad(r.h)+':'+pad(r.m);
 const SECS=[['profil','Profil','Adın'],['bildirim','Hatırlatmalar','Günlük ve haftalık bildirimler'],['vakit','Namaz vakitleri','Vakitler ve vakit bildirimleri'],['gorunum','Görünüm','Yazı boyutu ve tema'],['gorev','Görev listeleri','Toplu düzenleme'],['grup','Grup','Ad, telefonsuz üyeler, davet'],['telefon','Bu telefon','Verilerimi sil, sürüm']];
 function secSummary(k){
   if(k==='profil') return draft.myname||'Adını yaz';
-  if(k==='vakit') return draft.vk.en?((draft.vk.mode==='konum'?'Konumun':(draft.vk.label||(draft.vk.ilce&&draft.vk.ilce.ad)||'Yer seçilmedi'))+', '+draft.vk.off+' dk önce'):'Kapalı';
+  if(k==='vakit') return draft.vk.en?((draft.vk.il&&draft.vk.ilce?vkLabel(draft.vk):'Yer seçilmedi')+', '+draft.vk.off+' dk önce'):'Kapalı';
   if(k==='bildirim') return draft.rem.filter(r=>r.en).length+' / '+draft.rem.length+' açık';
   if(k==='gorunum') return ({'0.9':'Küçük','1':'Normal','1.12':'Büyük','1.25':'Çok büyük'})[String(APP.fs)]+' yazı, '+({auto:'sistem teması',light:'açık tema',dark:'koyu tema'})[APP.theme];
   if(k==='grup'){ const G=state.groups[GID]; return G?String(G.name||''):'Grubun yok'; }
@@ -1521,28 +1556,15 @@ function renderSheet(focusSel){
   h+=''+(state.notif&&state.notif!=='granted'?'<p class="err">'+(state.notif==='yok'?'Bildirimler sadece Android uygulamasında çalışır.':'Bildirim izni kapalı. Aşağıdan izin ver ya da telefon ayarlarından aç.')+'</p>'+(state.notif!=='yok'?'<p><button class="btn" data-act="perm">Bildirim izni ver</button></p>':''):'')+
     '<div>'+draft.rem.map((r,i)=>'<div class="rem"><label><input type="checkbox" data-ri="'+i+'" data-f="en"'+(r.en?' checked':'')+'><span>'+esc(r.t)+'<small>'+esc(remDays(r))+'</small></span></label><input type="time" value="'+hm(r)+'" data-ri="'+i+'" data-f="time" aria-label="'+esc(r.t)+' saati"></div>').join('')+'</div><p class="ed-note">Bildirim saatleri sadece bu telefon için geçerlidir.</p>';
     } else if(sec==='vakit'){
-  {
-    const v=draft.vk;
-    h+='<label class="switch" id="vkSec"><span>Vakitleri göster ve vakitten önce bildirim gönder</span><input type="checkbox" id="vkEn"'+(v.en?' checked':'')+'></label>';
-    if(v.en){
-      h+='<div class="seg" role="group" aria-label="Yer seçimi" style="margin:10px 0"><button data-vkm="ilce" aria-pressed="'+(v.mode==='ilce')+'">İl / ilçe</button><button data-vkm="konum" aria-pressed="'+(v.mode==='konum')+'">Konumum</button></div>';
-      if(v.mode==='ilce'){
-        if(state.sehirErr) h+='<p class="ed-note" style="margin-top:0">İl listesi alınamadı; il ve ilçeyi yazabilirsin.</p><div class="ed-row"><input type="text" id="vkIlTxt" placeholder="İl" value="'+esc((v.il&&v.il.ad)||'')+'" style="flex:1"><input type="text" id="vkIlceTxt" placeholder="İlçe" value="'+esc((v.ilce&&v.ilce.ad)||'')+'" style="flex:1"></div>';
-        else if(!SEHIRLER){ h+='<p class="ed-note" style="margin-top:0">İller yükleniyor…</p>'; ezSehirler().then(()=>{ if(draft) renderSheet(); }).catch(()=>{ state.sehirErr=true; if(draft) renderSheet(); }); }
-        else {
-          h+='<div class="ed-row"><select id="vkIl" aria-label="İl" style="flex:1"><option value="">İl seç</option>'+SEHIRLER.map(x=>'<option value="'+esc(x.id)+'"'+(v.il&&v.il.id===x.id?' selected':'')+'>'+esc(x.ad)+'</option>').join('')+'</select>';
-          const il=v.il&&ILCELER[v.il.id];
-          if(v.il&&!il){ ezIlceler(v.il.id).then(()=>{ if(draft) renderSheet(); }).catch(()=>{}); h+='<span class="small muted">İlçeler yükleniyor…</span>'; }
-          else if(il) h+='<select id="vkIlce" aria-label="İlçe" style="flex:1"><option value="">İlçe seç</option>'+il.map(x=>'<option value="'+esc(x.id)+'"'+(v.ilce&&v.ilce.id===x.id?' selected':'')+'>'+esc(x.ad)+'</option>').join('')+'</select>';
-          h+='</div>';
-        }
-      } else {
-        h+='<div class="ed-row"><button class="btn" data-act="konum">Konumumu al</button><span class="small muted">'+(v.lat!=null?'Konum alındı ('+(+v.lat).toFixed(2)+', '+(+v.lng).toFixed(2)+')':'Henüz konum alınmadı')+'</span></div><p class="ed-note">Konum sadece vakitleri hesaplamak için kullanılır, kimseyle paylaşılmaz.</p>';
-      }
-      h+='<div class="ed-row" style="margin-top:10px"><label>Bildirim <select id="vkOff">'+[15,20,30,45,60].map(n=>'<option value="'+n+'"'+(+v.off===n?' selected':'')+'>'+n+' dakika önce</option>').join('')+'</select></label></div>';
-      h+='<div class="ed-row" style="margin-top:6px">'+VAKIT_BILDIRIM.map(k=>'<label><input type="checkbox" data-vks="'+k+'"'+(v.sel[k]?' checked':'')+'> '+VAKITN[k]+'</label>').join('')+'</div>';
-    }
-  }
+      const v=draft.vk,ics=ilIlceleri(v.il);
+      h+='<label class="switch" id="vkSec"><span>Namaz vakti bildirimleri</span><input type="checkbox" id="vkEn"'+(v.en?' checked':'')+'></label>';
+      h+='<h3>Yer</h3><div class="ed-row"><label class="fl" style="flex:1;margin-top:0">İl<select id="vkIl"><option value="">İl seç</option>'+ILLER.map(r=>'<option'+(r[0]===v.il?' selected':'')+'>'+esc(r[0])+'</option>').join('')+'</select></label>'+
+        '<label class="fl" style="flex:1;margin-top:0">İlçe<select id="vkIlce"'+(v.il?'':' disabled')+'><option value="">'+(v.il?'İlçe seç':'Önce il seç')+'</option>'+ics.map(n=>'<option'+(n===v.ilce?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select></label></div>';
+      if(VKT&&VKT.key===vkKey(v)&&v.il&&v.ilce) h+='<p class="ed-note">'+esc(vkSourceNote())+'</p>';
+      else if(v.il&&v.ilce) h+='<p class="ed-note">Kaydedince '+esc(vkLabel(v))+' için Diyanet vakitleri alınır.</p>';
+      h+='<h3>Bildirim</h3><div class="ed-row"><label class="fl" style="flex:1;margin-top:0">Ne kadar önce<select id="vkOff"'+(v.en?'':' disabled')+'>'+[15,20,30,45,60].map(n=>'<option value="'+n+'"'+(+v.off===n?' selected':'')+'>'+n+' dakika önce</option>').join('')+'</select></label></div>';
+      h+='<div class="vsel">'+VAKIT_BILDIRIM.map(k=>'<label><input type="checkbox" data-vks="'+k+'"'+(v.sel[k]?' checked':'')+(v.en?'':' disabled')+'> '+VAKITN[k]+'</label>').join('')+'</div>';
+      h+='<p class="ed-note">Vakitler, bildirim açık olmasa da Bugün ekranında görünür.</p>';
     } else if(sec==='gorunum'){
       h+='<h3>Yazı boyutu</h3><div class="seg opts" role="group">'+[['0.9','Küçük'],['1','Normal'],['1.12','Büyük'],['1.25','Çok büyük']].map(([v,n])=>'<button data-fs="'+v+'" aria-pressed="'+(String(APP.fs)===v)+'" style="font-size:'+(+v)+'rem">'+n+'</button>').join('')+'</div>';
       h+='<h3>Tema</h3><div class="seg opts" role="group">'+[['auto','Sistem'],['light','Açık'],['dark','Koyu']].map(([v,n])=>'<button data-th="'+v+'" aria-pressed="'+(APP.theme===v)+'">'+n+'</button>').join('')+'</div><p class="ed-note">Görünüm ayarları hemen uygulanır ve sadece bu telefon için geçerlidir.</p>';
@@ -1571,9 +1593,8 @@ function onDraft(e){
   if(el.id==='vkEn'){ if(e.type!=='change') return; v.en=el.checked; renderSheet(); return; }
   if(el.id==='vkOff'){ v.off=+el.value||30; return; }
   if(el.dataset.vks){ v.sel[el.dataset.vks]=el.checked; return; }
-  if(el.id==='vkIl'){ if(e.type!=='change') return; const x=(SEHIRLER||[]).find(a=>a.id===el.value)||null; v.il=x; v.ilce=null; renderSheet(); return; }
-  if(el.id==='vkIlce'){ if(e.type!=='change') return; const x=((v.il&&ILCELER[v.il.id])||[]).find(a=>a.id===el.value)||null; v.ilce=x; v.label=x?x.ad+', '+v.il.ad:''; return; }
-  if(el.id==='vkIlTxt'||el.id==='vkIlceTxt'){ const il=trTitle(($('vkIlTxt')||{}).value||'').trim(),ic=trTitle(($('vkIlceTxt')||{}).value||'').trim(); v.il=il?{id:'x',ad:il}:null; v.ilce=ic&&il?{id:'x'+il+'/'+ic,ad:ic}:null; v.label=v.ilce?ic+', '+il:''; return; }
+  if(el.id==='vkIl'){ if(e.type!=='change') return; v.il=el.value; v.ilce=ilIlceleri(v.il).length===1?ilIlceleri(v.il)[0]:''; renderSheet(); return; }
+  if(el.id==='vkIlce'){ if(e.type!=='change') return; v.ilce=el.value; renderSheet(); return; }
   if(el.id==='gNameEd'){ draft.gname=el.value; return; }
   if(el.dataset.ri!==undefined){ const r=draft.rem[+el.dataset.ri]; if(!r) return; if(el.dataset.f==='en') r.en=el.checked; else { const a=String(el.value||'').split(':').map(Number); if(a.length===2&&!isNaN(a[0])&&!isNaN(a[1])){ r.h=a[0]; r.m=a[1]; } } return; }
   if(el.dataset.mi!==undefined){ const m=draft.managed[+el.dataset.mi]; if(m) m.name=el.value; return; }
@@ -1586,10 +1607,8 @@ $('sheetBody').addEventListener('click',e=>{
   const sc=e.target.closest('[data-sec]'); if(sc&&draft){ draft.sec=sc.dataset.sec; renderSheet(); $('sheetBody').scrollTop=0; return; }
   const fsb=e.target.closest('[data-fs]'); if(fsb){ APP.fs=+fsb.dataset.fs; appSave(); applyApp(); renderSheet(); return; }
   const thb=e.target.closest('[data-th]'); if(thb){ APP.theme=thb.dataset.th; appSave(); applyApp(); renderSheet(); return; }
-  const b=e.target.closest('[data-act],[data-vkm]'); if(!b||!draft) return; const a=b.dataset.act,arr=b.dataset.l==='g'?draft.gt:draft.pt;
-  if(b.dataset.vkm){ draft.vk.mode=b.dataset.vkm; renderSheet(); return; }
+  const b=e.target.closest('[data-act]'); if(!b||!draft) return; const a=b.dataset.act,arr=b.dataset.l==='g'?draft.gt:draft.pt;
   if(a==='invite') sendInvite();
-  else if(a==='konum'){ b.disabled=true; getKonum().then(c=>{ if(!draft) return; draft.vk.lat=c.lat; draft.vk.lng=c.lng; draft.vk.label='Konumun'; renderSheet(); }).catch(()=>{ toast('Konum alınamadı. Konum iznini ve GPS\'i kontrol et.'); if(draft) renderSheet(); }); }
   else if(a==='perm') scheduleReminders(true).then(()=>{ if(draft) renderSheet(); });
   else if(a==='addt'){ arr.push({id:uid('t'),name:'',period:b.dataset.p,target:1,unit:'kez',scope:b.dataset.l==='g'?'aile':'kisi',cat:'diger'}); renderSheet('[data-l="'+b.dataset.l+'"][data-ti="'+(arr.length-1)+'"][data-f="name"]'); }
   else if(a==='delt'){ arr.splice(+b.dataset.ti,1); renderSheet(); }
@@ -1600,9 +1619,9 @@ $('sheetBody').addEventListener('click',e=>{
 });
 $('sheetSave').addEventListener('click',()=>{
   if(!draft||!db) return; const d=draft; closeSettings();
-  const oldKey=vkKey(); VK=Object.assign({},d.vk); if(VK.en&&VK.mode==='ilce'&&VK.ilce&&!VK.label) VK.label=VK.ilce.ad+(VK.il?', '+VK.il.ad:''); vkSave();
+  const oldKey=vkKey(); VK=Object.assign({},d.vk); vkSave();
   REM=d.rem; remSave(); scheduleReminders(false);
-  if(vkReady()) ensureVakitler(vkKey()!==oldKey); else if(VK.en) toast('Namaz vakitleri için il/ilçe ya da konum seç.');
+  if(VK.il&&VK.ilce) ensureVakitler(vkKey()!==oldKey); else if(VK.en) toast('Namaz vakitleri için il ve ilçe seç.');
   const clean=arr=>normTasks(arr.map(t=>Object.assign({},t,{name:String(t.name).trim()})))||[];
   const b=db.batch(); let n=0;
   const pt=clean(d.pt).map(t=>Object.assign(t,{scope:'kisi'}));
