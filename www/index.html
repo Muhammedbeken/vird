@@ -1554,15 +1554,11 @@ $('rdClose').addEventListener('click',closeReader);
 const KAABA=[21.422487,39.826206];
 function qiblaBearing(lat,lng){ const r=Math.PI/180,f1=lat*r,f2=KAABA[0]*r,dl=(KAABA[1]-lng)*r; const y=Math.sin(dl)*Math.cos(f2),x=Math.cos(f1)*Math.sin(f2)-Math.sin(f1)*Math.cos(f2)*Math.cos(dl); return (Math.atan2(y,x)/r+360)%360; }
 async function kibleKoord(){
-  if(!VK.il) return null; const key=vkKey(); let c=null; try{ c=JSON.parse(lsGet('vird:kc')||'null'); }catch(e){}
-  if(c&&c.key===key) return c;
-  const adr=(VK.ilce&&VK.ilce!=='Merkez'?VK.ilce+', ':'')+VK.il+', Türkiye';
-  const j=await httpGet('https://api.aladhan.com/v1/timingsByAddress?address='+encodeURIComponent(adr)+'&method=13');
-  const m=j&&j.data&&j.data.meta; if(!m||m.latitude==null) throw new Error('konum bulunamadı');
-  c={key,lat:+m.latitude,lng:+m.longitude}; lsSet('vird:kc',JSON.stringify(c)); return c;
+  if(!VK.il) return null; const P=KOORD[VK.il]; if(!P) throw new Error('il koordinatı yok');
+  const c=(VK.ilce&&P[VK.ilce])||P['']; return {lat:c[0],lng:c[1],center:!(VK.ilce&&P[VK.ilce])};
 }
 const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null,lh:null,acc:3,n:0,src:'',err:''};
-let CompassP=null; function compassPlugin(){ if(CompassP!==null) return CompassP; const C=window.Capacitor; CompassP=(C&&C.isNativePlatform&&C.isNativePlatform()&&C.registerPlugin)?C.registerPlugin('Compass'):false; return CompassP; }
+function compassPlugin(){ return Plug('Compass')||null; }
 function kbHeading(h,acc){ if(!kb.on||h==null||isNaN(h)) return; kb.got=true; kb.n++; if(acc!=null) kb.acc=acc; if(kb.sm==null) kb.sm=h; else { const d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.3+360)%360; } kbDraw(); }
 const compassDir=a=>['kuzey','kuzey-kuzeydoğu','kuzeydoğu','doğu-kuzeydoğu','doğu','doğu-güneydoğu','güneydoğu','güney-güneydoğu','güney','güney-güneybatı','güneybatı','batı-güneybatı','batı','batı-kuzeybatı','kuzeybatı','kuzey-kuzeybatı'][Math.round(((a%360)+360)%360/22.5)%16];
 function kbOrient(e){
@@ -1589,12 +1585,12 @@ async function openKible(){
   $('kbLoc').textContent=VK.il?vkLabel():''; $('kbInfo').textContent=''; $('kbMsg').textContent='';
   $('kbNeed').hidden=!!VK.il; $('kbWrap').hidden=!VK.il;
   if(!VK.il) return;
-  $('kbMsg').textContent='Konum bilgisi hazırlanıyor…';
-  try{ const c=await kibleKoord(); if(!kb.on) return; kb.q=qiblaBearing(c.lat,c.lng);
+  $('kbMsg').textContent='';
+  try{ const c=await kibleKoord(); if(!kb.on) return; kb.q=qiblaBearing(c.lat,c.lng); kb.center=c.center;
     $('kbMark').style.transform='rotate('+kb.q.toFixed(1)+'deg)';
-    $('kbInfo').textContent='Kıble açısı: kuzeyden saat yönünde '+Math.round(kb.q)+'° ('+compassDir(kb.q)+')';
+    $('kbInfo').textContent='Kıble açısı: kuzeyden saat yönünde '+Math.round(kb.q)+'° ('+compassDir(kb.q)+')'+(kb.center?', il merkezine göre':'');
     $('kbMsg').textContent='Pusula bekleniyor…'; kbDraw();
-  }catch(e){ console.warn(e); $('kbMsg').textContent='Kıble yönü için bir kez internet gerekiyor. Bağlantını kontrol edip tekrar aç.'; return; }
+  }catch(e){ console.warn(e); $('kbMsg').textContent='Seçtiğin yerin konumu bulunamadı. Ayarlar\'dan il ve ilçeni yeniden seç.'; return; }
   let native=false; const CP=compassPlugin();
   kb.n=0; kb.err=''; kb.src='tarayıcı';
   if(CP){ try{ const c2=await kibleKoord(); kb.lh=await CP.addListener('heading',d=>kbHeading(+d.heading,d.accuracy)); const r=await CP.start({lat:c2.lat,lng:c2.lng}); kb.src=r&&r.mode==='dondurme'?'telefonun dönüş sensörü':r&&r.mode==='manyetik'?'telefonun manyetik pusulası':'sensör bulunamadı'; if(r&&r.available) native=true; else if(kb.lh){ kb.lh.remove(); kb.lh=null; } }catch(e){ console.warn('pusula',e); kb.err=String((e&&e.message)||e).slice(0,80); } }
