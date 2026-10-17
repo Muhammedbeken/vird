@@ -400,6 +400,70 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .sheet-body h3:first-of-type{margin-top:10px}
 .back{font-size:.95rem}
 .wlogo{width:44px;height:44px;fill:var(--gold);stroke:var(--cobalt);stroke-width:3;margin-bottom:6px}
+/* tur 2 */
+.vh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.vh .h2{min-width:0}
+.g-head .h2::before{background:var(--rc,var(--cobalt))}
+.back{display:block}
+.esma-all summary,#ngForm summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.esma-all summary::-webkit-details-marker,#ngForm summary::-webkit-details-marker{display:none}
+.esma-all summary::after,#ngForm summary::after{content:"›";font-size:1.3rem;color:var(--ink-2);transform:rotate(90deg);transition:transform .2s;flex:none}
+.esma-all[open] summary::after,#ngForm[open] summary::after{transform:rotate(-90deg)}
+.chk.lead{width:38px;height:38px;flex:none;border-color:var(--line);color:transparent;padding:0}
+.chk.lead svg{width:20px;height:20px}
+.chk.lead.on{background:var(--rc,var(--turq));border-color:var(--rc,var(--turq));color:var(--surface)}
+.task.bin .t-main{cursor:pointer}
+.hero .star{width:96px}
+.hero .sum{grid-template-columns:96px 1fr;gap:14px}
+.hero .sum-main{font-size:1.18rem;line-height:1.2}
+.hero .sum-sub{font-size:.88rem}
+.z-bottom .btn.plus{min-width:7rem}
+@media (max-width:370px){ .hero .star{width:84px} .hero .sum{grid-template-columns:84px 1fr} .hero .pct{font-size:1.25rem} .app{padding-left:12px;padding-right:12px} }
+/* okuma ekranı */
+.reader{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;padding-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px))}
+.reader:not([hidden]){animation:fadeIn .18s ease}
+.reader:focus{outline:none}
+.rd-top{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.rd-tt{min-width:0}
+.rd-tt h2{font-family:var(--serif);font-size:1.2rem;margin:0;color:var(--cobalt)}
+.rd-tt span{font-size:.85rem;color:var(--ink-2)}
+.rd-bar{display:block;height:3px;background:var(--surface-2);position:relative}
+.rd-bar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0)*100%);background:var(--turq);transition:width .3s}
+.rd-body{flex:1;overflow:auto;padding:14px 14px calc(30px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));max-width:620px;width:100%;margin:0 auto;-webkit-overflow-scrolling:touch}
+.rd-note{font-size:.88rem;color:var(--ink-2);margin:0 2px 12px}
+.zcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;scroll-margin-top:10px;transition:opacity .25s}
+.zcard header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.zcard header b{font-family:var(--serif);font-size:1.08rem}
+.zc-rep{font-size:.8rem;font-weight:700;color:var(--cobalt);background:var(--cobalt-soft);border-radius:6px;padding:2px 8px;white-space:nowrap}
+.zc-bes{font-family:var(--ar);font-size:1.3rem;text-align:center;margin:10px 0 0;color:var(--ink-2)}
+.zc-ar{font-family:var(--ar);font-size:1.6rem;line-height:2.1;text-align:right;margin:10px 0 6px;color:var(--ink)}
+.zc-ok{font-style:italic;color:var(--cobalt);margin:6px 0;line-height:1.5}
+.zc-tr{margin:6px 0;line-height:1.55}
+.zc-f{margin:8px 0 0;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:.9rem;line-height:1.45}
+.zc-src{margin:8px 0 0;font-size:.8rem;color:var(--ink-2)}
+.zc-act{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+.zc-btn{height:46px;min-width:9rem;font-size:1rem}
+.zc-ok2{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--turq)}
+.zc-ok2 svg{width:20px;height:20px}
+.zcard.done{opacity:.62}
+.zcard.done .zc-ar{font-size:1.3rem}
+.rd-end{text-align:center;padding:10px 0 20px;font-family:var(--serif);font-size:1.2rem;color:var(--turq)}
+/* kıble */
+.kbtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 .7rem;font-size:.9rem}
+.vloc{margin:2px 0 0}
+.kb-box{position:relative;width:min(80vw,320px);aspect-ratio:1;margin:18px auto 6px}
+.kb-ptr{position:absolute;left:50%;top:-6px;width:4px;height:30px;margin-left:-2px;border-radius:2px;background:var(--cobalt);z-index:2}
+.kb-dial{position:absolute;inset:0;transition:transform .12s linear}
+.kb-dial svg{width:100%;height:100%}
+.kb-ring{fill:var(--surface);stroke:var(--line);stroke-width:2}
+.kb-ticks line{stroke:var(--ink-2);stroke-width:1.2;stroke-linecap:round}
+.kb-n{fill:var(--danger);font:700 16px var(--sans);text-anchor:middle}
+.kb-c{fill:var(--ink-2);font:600 13px var(--sans);text-anchor:middle}
+.kb-mark{position:absolute;inset:0}
+.kb-kaaba{position:absolute;left:50%;top:8%;width:30px;height:30px;margin-left:-15px;border-radius:5px;background:#1b1b1b;box-shadow:inset 0 7px 0 #c9a14a,0 0 0 3px var(--surface)}
+.kible.aligned .kb-ring{stroke:var(--turq);stroke-width:6}
+.kible.aligned .kb-ptr{background:var(--turq)}
+.kb-tip{max-width:420px;font-size:.82rem}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -435,6 +499,28 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
   <div class="z-bottom" id="zBottom"></div>
 </div>
 
+<div class="reader" id="reader" tabindex="-1" hidden role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+  <div class="rd-top"><button class="btn ghost" id="rdClose">Kapat</button><div class="rd-tt"><h2 id="rdTitle"></h2><span id="rdProg"></span></div></div>
+  <span class="rd-bar" id="rdBar"></span>
+  <div class="rd-body" id="rdBody"></div>
+</div>
+<div class="zikir kible" id="kible" hidden role="dialog" aria-modal="true" aria-labelledby="kbTitle">
+  <div class="z-top"><button class="btn ghost" id="kbClose">Kapat</button><span class="z-who" id="kbLoc"></span></div>
+  <h2 class="z-name" id="kbTitle">Kıble</h2>
+  <div id="kbNeed" hidden><p class="z-hint">Kıble yönünü bulmak için önce il ve ilçeni seç.</p><p style="text-align:center"><button class="btn plus" id="kbSet">İl ve ilçe seç</button></p></div>
+  <div id="kbWrap">
+    <div class="kb-box">
+      <span class="kb-ptr" aria-hidden="true"></span>
+      <div class="kb-dial" id="kbDial">
+        <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="94" class="kb-ring"/><g class="kb-ticks"></g><text x="100" y="26" class="kb-n">K</text><text x="178" y="105" class="kb-c">D</text><text x="100" y="186" class="kb-c">G</text><text x="22" y="105" class="kb-c">B</text></svg>
+        <div class="kb-mark" id="kbMark"><span class="kb-kaaba"></span></div>
+      </div>
+    </div>
+    <p class="z-msg" id="kbMsg" aria-live="polite"></p>
+    <p class="z-hint" id="kbInfo"></p>
+    <p class="z-hint kb-tip">Doğru sonuç için telefonu düz tut; metal eşyalardan ve elektronik cihazlardan uzak dur. Sapma varsa telefonu havada birkaç kez 8 çizerek pusulayı ayarla.</p>
+  </div>
+</div>
 <div class="sheet-bg" id="tedBg" hidden style="z-index:65"></div>
 <div class="sheet ted" id="ted" hidden role="dialog" aria-modal="true" aria-labelledby="tedTitle" style="z-index:70"><div class="sheet-body" id="tedBody" style="padding-top:18px"></div></div>
 <div class="sheet-bg" id="sheetBg" hidden></div>
@@ -496,14 +582,22 @@ function esmaOfDay(d){ const n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),
 const isEsma=t=>t.unit==='esma';
 const isDk=t=>t.unit==='dk';
 const tgt=t=>isDk(t)?t.target*60:t.target;
-const isBinary=t=>!isEsma(t)&&!isDk(t)&&t.target===1;
-const capOf=(t,f)=>f.indexOf('esma_')===0?ESMA[+f.slice(5)-1][2]:tgt(t);
+const isList=t=>t.unit==='liste';
+const isBinary=t=>!isEsma(t)&&!isDk(t)&&!isList(t)&&t.target===1;
+const ZMAP={}; for(const L of [ZIKIR_SABAH,ZIKIR_AKSAM,NEBEVI_DUALAR]) for(const x of L) ZMAP[x.id]=x;
+const dayIdx=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
+function duaOfDay(d){ const L=NEBEVI_DUALAR.length,b=(((dayIdx(d)*3)%L)+L)%L; return [0,1,2].map(i=>NEBEVI_DUALAR[(b+i)%L]); }
+function listItems(t,d){ return t.kind==='aksam'?ZIKIR_AKSAM:t.kind==='dua'?duaOfDay(d||state.cursor):ZIKIR_SABAH; }
+const capOf=(t,f)=>f.indexOf('esma_')===0?ESMA[+f.slice(5)-1][2]:f.indexOf('z_')===0?((ZMAP[f.slice(2)]||{}).rep||1):tgt(t);
+function listDone(t,u,k,d){ let n=0; const it=listItems(t,d); for(const x of it) if(val(t,u,k,'z_'+x.id)>=x.rep) n++; return [n,it.length]; }
+const listWord=t=>t.kind==='dua'?'dua':'zikir';
 function mmss(s){ s=Math.floor(s); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60; return h?h+':'+pad(m)+':'+pad(x):m+':'+pad(x); }
 function fmtMin(v){ v=Math.floor(v); if(v>=60){const h=Math.floor(v/60),m=v%60;return m?NF.format(h)+' sa '+m+' dk':NF.format(h)+' sa';} return v+' dk'; }
 
 const STAR=(function(){const R=47,r=R*0.7654,p=[];for(let i=0;i<16;i++){const a=(-90+i*22.5)*Math.PI/180,q=i%2?r:R;p.push((50+q*Math.cos(a)).toFixed(2)+','+(50+q*Math.sin(a)).toFixed(2));}return p.join(' ');})();
 const MINI='<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STAR+'"/></svg>';
 const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
+const KBICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>';
 const CHECKS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 function ringHTML(f,cat){ const rc='var(--c-'+(CATNAME[cat]?cat:'diger')+')';
   if(f>=0.9999) return '<span class="ring ok" style="--rc:'+rc+'" aria-hidden="true">'+CHECKS+'</span>';
@@ -549,6 +643,7 @@ function normTasks(ts){
   if(!Array.isArray(ts)) return null;
   return ts.filter(t=>t&&t.id&&t.name&&PNAME[t.period]).map(t=>{ const x=Object.assign({},t);
     if(x.id==='esma'){x.unit='esma';x.target=3;}
+    if(x.unit==='liste'){ x.target=1; if(!['sabah','aksam','dua'].includes(x.kind)) x.kind=x.id==='aksam_zikir'?'aksam':x.id==='peygamber_dua'?'dua':'sabah'; }
     x.target=Math.max(1,parseInt(x.target,10)||1); if(x.scope!=='aile')x.scope='kisi';
     if(!CATNAME[x.cat]) x.cat=CATMAP[x.id]||'diger'; return x; });
 }
@@ -559,9 +654,10 @@ const timerVal=()=>timer.base+(Date.now()-timer.start)/1000;
 function val(t,u,k,f){ f=f||t.id; let v=+valsOf(t,u,k)[f]||0; if(timerOn(t,u,k,f)) v=Math.min(capOf(t,f),timerVal()); return v; }
 function frac(t,u,k,date){
   if(isEsma(t)){ let s=0; for(const i of esmaOfDay(date)) s+=Math.min(1,val(t,u,k,'esma_'+(i+1))/ESMA[i][2]); return s/3; }
+  if(isList(t)){ const it=listItems(t,date); let s=0; for(const x of it) s+=Math.min(1,val(t,u,k,'z_'+x.id)/x.rep); return it.length?s/it.length:0; }
   return Math.min(1,val(t,u,k)/tgt(t));
 }
-function amount(t,u,k){ if(isEsma(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('esma_')===0) s+=+v[f]||0; return s; } return val(t,u,k); }
+function amount(t,u,k){ if(isList(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('z_')===0) s+=+v[f]||0; return s; } if(isEsma(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('esma_')===0) s+=+v[f]||0; return s; } return val(t,u,k); }
 function comp(u,p,d){
   const ts=tasksOf(u).filter(t=>t.period===p); if(!ts.length||!u) return {pct:0,done:0,total:0};
   const k=docKey(p,d); let s=0,done=0;
@@ -648,7 +744,7 @@ function syncSubs(){
   const mine=(state.people[ME]&&state.people[ME].groups)||[];
   for(const g of mine){ wantG.add(g); const G=state.groups[g]; if(G&&Array.isArray(G.members)) G.members.forEach(p=>wantP.add(p)); }
   for(const p of wantP) if(!subs.person[p]){
-    subs.person[p]=db.collection('people').doc(p).onSnapshot(s=>{ if(s.exists) state.people[p]=s.data()||{}; else if(!s.metadata.fromCache) delete state.people[p]; bump(); syncSubs(); afterMembers(); render(); if(p===ME&&state.joined) firstReminders(); },e=>console.warn('kişi',p,e));
+    subs.person[p]=db.collection('people').doc(p).onSnapshot(s=>{ if(s.exists) state.people[p]=s.data()||{}; else if(!s.metadata.fromCache) delete state.people[p]; bump(); syncSubs(); afterMembers(); render(); if(p===ME&&state.joined){ firstReminders(); addNewTasksOnce(); } },e=>console.warn('kişi',p,e));
     subs.plogs[p]=db.collection('people').doc(p).collection('logs').onSnapshot({includeMetadataChanges:true},q=>{ state.logs[p]=mapLogs(q); overlayPend(); statusFrom(q); render(); },e=>console.warn('kayıt',p,e));
   }
   for(const g of wantG) if(!subs.group[g]){
@@ -883,6 +979,13 @@ async function scheduleReminders(ask){
   }catch(e){ console.warn(e); }
 }
 let remDone=false;
+function addNewTasksOnce(){
+  if(lsGet('vird:zk1')) return; const P=state.people[ME]; if(!P||!db) return; lsSet('vird:zk1','1');
+  if(!Array.isArray(P.tasks)) return;
+  const have=new Set(P.tasks.map(t=>t.id)),add=DEFAULT_TASKS.filter(t=>['sabah_zikir','aksam_zikir','peygamber_dua'].includes(t.id)&&!have.has(t.id));
+  if(!add.length) return; const L=P.tasks.slice(); let at=L.findIndex(t=>t.id==='esma'); at=at<0?L.length:at+1;
+  L.splice(at,0,...clone(add)); db.collection('people').doc(ME).update({tasks:L}).catch(()=>{});
+}
 function firstReminders(){ if(remDone) return; remDone=true; scheduleReminders(!lsGet('vird:remAsked')); lsSet('vird:remAsked','1'); }
 
 /* namaz vakitleri (il/ilçe seçimiyle, Diyanet vakitleri) */
@@ -954,14 +1057,15 @@ async function fetchVakitler(){
   if(!Object.keys(days).length) throw new Error('vakit bulunamadı');
   VKT={key:vkKey(),src,center:!!(info&&info.center&&src==='diyanet'),dname:info&&info.dname||'',days,at:Date.now()}; lsSet('vird:vkt2',JSON.stringify(VKT));
 }
-let vkBusy=false;
+let vkBusy=false,vkFailAt=0;
 async function ensureVakitler(force){
   if(!vkReady()||vkBusy) return;
+  if(!force&&vkFailAt&&Date.now()-vkFailAt<90000) return;
   const need=iso(addDays(sod(new Date()),7));
   const stale=VKT&&VKT.src==='hesap'&&Date.now()-(+VKT.at||0)>6*3600e3;
   if(!force&&!stale&&VKT&&VKT.key===vkKey()&&VKT.days[need]) return;
   vkBusy=true; state.vkErr=''; if(!VKT||VKT.key!==vkKey()) render();
-  try{ await fetchVakitler(); }catch(e){ console.warn(e); state.vkErr='Namaz vakitleri alınamadı. İnternet bağlantını kontrol et; uygulama tekrar deneyecek.'; }
+  try{ await fetchVakitler(); vkFailAt=0; }catch(e){ console.warn(e); vkFailAt=Date.now(); state.vkErr='Namaz vakitleri alınamadı. İnternet bağlantını kontrol et; uygulama tekrar deneyecek.'; }
   vkBusy=false; render(); scheduleReminders(false);
 }
 function nextVakit(day){
@@ -979,10 +1083,10 @@ function vkSourceNote(){
 function vakitHTML(d){
   if(!vkReady()) return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn" data-vk="ayar">Ayarla</button></div><p class="small muted" style="margin:6px 0 0">'+(VK.en?'İlini ve ilçeni seç; vakitleri görür, her vakitten önce bildirim alırsın.':'İlini ve ilçeni seç; vakitleri görür, istersen her vakitten önce bildirim alırsın.')+'</p></section>';
   const day=VKT&&VKT.key===vkKey()&&VKT.days[iso(d)];
-  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><span class="small muted">'+esc(vkLabel())+'</span></div><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
+  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KBICON+' Kıble</button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
   ensureVakitler();
   const isToday=+sod(d)===+sod(new Date()),nx=isToday?nextVakit(day):null,cuma=d.getDay()===5;
-  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><span class="small muted">'+esc(vkLabel())+'</span></div><div class="vgrid">'+
+  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KBICON+' Kıble</button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><div class="vgrid">'+
     VAKIT.map(([k,nm])=>'<div class="v'+(nx&&!nx.tom&&nx.k===k?' next':'')+'"><span>'+(k==='ogle'&&cuma?'Cuma':nm)+'</span><b>'+esc(day[k]||'–')+'</b></div>').join('')+'</div>'+
     (nx?'<p class="vnext" id="vkNext">'+esc((nx.tom?'Yarın ':'')+(nx.k==='ogle'&&cuma?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left))+'</p>':'')+
     '<p class="fine">'+esc(vkSourceNote())+'</p></section>';
@@ -1021,7 +1125,7 @@ function dailyHTML(d,compact){
   if(A&&A.tr) a='<p class="d-ar" lang="ar" dir="rtl">'+esc(A.ar)+'</p><p class="d-tr">'+esc(A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
   else if(A==='err') a='<p class="d-tr muted">Âyet yüklenemedi. İnternet bağlantısı gelince tekrar denenecek.</p>';
   else a='<p class="d-tr muted">Yükleniyor…</p>';
-  if(A==='err') delete ayetSt[key];
+  if(A==='err'&&!ayetSt['_t'+key]){ ayetSt['_t'+key]=1; setTimeout(()=>{ delete ayetSt[key]; delete ayetSt['_t'+key]; },60000); }
   const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length];
   const src='<p class="d-src">'+(A&&A.tr?(A.ed==='tr.vakfi'?'Meal: Türkiye Diyanet Vakfı':'Meal: Diyanet İşleri Başkanlığı'):'')+'</p>';
   const peek=x=>{ x=String(x||''); return x.length>70?x.slice(0,70).replace(/\s+\S*$/,'')+'…':x; };
@@ -1076,7 +1180,7 @@ function renderJoin(){
 }
 function renderGroupsBar(){
   const el=$('groupsbar'),gs=state.joined?myGroups():[];
-  if(!gs.length||state.tab==='bugun'){ el.hidden=true; el.innerHTML=''; return; }
+  if(!gs.length||state.tab==='bugun'||(state.tab!=='aile'&&gs.length<2)){ el.hidden=true; el.innerHTML=''; return; }
   el.hidden=false;
   el.innerHTML=gs.map(g=>{ const G=state.groups[g]; return '<button class="chip gchip" data-gid="'+esc(g)+'" aria-pressed="'+(g===GID)+'">'+esc(G.name||'Grup')+'</button>'; }).join('')+'<button class="chip gchip add" data-goto="aile" aria-label="Yeni grup">+ Grup</button>';
 }
@@ -1110,6 +1214,7 @@ function historyHTML(u){
 }
 function valText(t,u,k,f){
   const v=val(t,u,k,f),T=capOf(t,f||t.id);
+  if(isList(t)){ const [n,m]=listDone(t,u,k,state.cursor); return n+' / '+m+' '+listWord(t); }
   if(isBinary(t)) return v>=1?'Tamamlandı':'1 '+(t.unit==='adet'?'kez':t.unit);
   if(isDk(t)) return timerOn(t,u,k,t.id)?mmss(v)+' / '+mmss(T)+' sayılıyor':fmtMin(v/60)+' / '+fmtMin(t.target);
   return NF.format(Math.floor(v))+' / '+NF.format(T)+(t.unit==='adet'||f?'':' '+t.unit);
@@ -1118,13 +1223,16 @@ function rowHTML(t,u,k){
   const ed=canEditTask(t),f=frac(t,u,k,state.cursor),done=f>=0.9999,n=esc(t.name),run=isDk(t)&&timerOn(t,u,k,t.id),v=val(t,u,k);
   let ctl='';
   if(ed){
-    if(isBinary(t)) ctl='<button class="chk" data-act="toggle" aria-pressed="'+done+'" aria-label="'+n+(done?': tamamlandı, geri al':': tamamlandı olarak işaretle')+'">'+CHECK+'</button>';
+    if(isBinary(t)) ctl='';
+    else if(isList(t)){ if(!done) ctl='<button class="btn plus" data-act="read">Oku</button>'; }
     else if(isDk(t)){ if(!done) ctl='<button class="btn plus" data-act="timer">'+(run?'Durdur':'Başlat')+'</button>'; }
     else if(t.target>=20){ if(!done) ctl='<button class="btn plus" data-act="open">Say</button>'; }
     else ctl=(v>0?'<button class="btn" data-act="dec" aria-label="'+n+': bir azalt">−</button>':'')+(!done?'<button class="btn plus" data-act="inc" aria-label="'+n+': bir ekle">+1</button>':'');
   }
-  const op=ed&&!isBinary(t),mo=op?'<button class="t-main" data-act="open" aria-label="'+n+' sayacını aç">':'<div class="t-main">',mc=op?'</button>':'</div>';
-  return '<li class="task'+(done?' done':'')+(run?' running':'')+'" data-id="'+esc(t.id)+'">'+ringHTML(f,t.cat)+mo+'<span class="t-name">'+n+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(valText(t,u,k))+'</span>'+mc+'<div class="t-ctl">'+ctl+'</div></li>';
+  const bin=ed&&isBinary(t),op=ed&&!isBinary(t);
+  const mo=bin?'<button class="t-main" data-act="toggle" aria-pressed="'+done+'" aria-label="'+n+(done?': yapıldı, geri al':': yapıldı olarak işaretle')+'">':op?'<button class="t-main" data-act="'+(isList(t)?'read':'open')+'" aria-label="'+n+(isList(t)?' metinlerini aç':' sayacını aç')+'">':'<div class="t-main">',mc=(bin||op)?'</button>':'</div>';
+  const lead=bin?'<button class="chk lead'+(done?' on':'')+'" data-act="toggle" style="--rc:var(--c-'+(CATNAME[t.cat]?t.cat:'diger')+')" aria-hidden="true" tabindex="-1">'+CHECK+'</button>':ringHTML(f,t.cat);
+  return '<li class="task'+(done?' done':'')+(run?' running':'')+(bin?' bin':'')+'" data-id="'+esc(t.id)+'">'+lead+mo+'<span class="t-name">'+n+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(valText(t,u,k))+'</span>'+mc+'<div class="t-ctl">'+ctl+'</div></li>';
 }
 function esmaHTML(t,u,k,hideDone){
   const ids=esmaOfDay(state.cursor),ed=canEditTask(t),f=frac(t,u,k,state.cursor);
@@ -1203,7 +1311,7 @@ function viewToday(){
 }
 function editRowHTML(t){
   const f=frac(t,ME,docKey(t.period,state.cursor),state.cursor);
-  const desc=isEsma(t)?'Her gün 3 isim':isDk(t)?fmtMin(t.target):NF.format(t.target)+(t.unit==='adet'?'':' '+t.unit);
+  const desc=isList(t)?(t.kind==='dua'?'Her gün 3 dua':listItems(t).length+' zikir'):isEsma(t)?'Her gün 3 isim':isDk(t)?fmtMin(t.target):NF.format(t.target)+(t.unit==='adet'?'':' '+t.unit);
   return '<li class="task edit" data-id="'+esc(t.id)+'">'+ringHTML(f,t.cat)+'<button class="t-main" data-tedit="'+esc(t.id)+'"><span class="t-name">'+esc(t.name)+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(desc)+'</span></button><div class="t-ctl"><button class="btn" data-mv="-1" aria-label="'+esc(t.name)+' yukarı">↑</button><button class="btn" data-mv="1" aria-label="'+esc(t.name)+' aşağı">↓</button></div></li>';
 }
 /* görev düzenleyici */
@@ -1223,11 +1331,11 @@ function openTaskEditor(id,per,cat){
 }
 function closeTaskEditor(){ ted=null; $('ted').hidden=true; $('tedBg').hidden=true; document.body.style.overflow=''; }
 function renderTaskEditor(){
-  const t=ted.t,es=isEsma(t),G=state.groups[GID];
+  const t=ted.t,es=isEsma(t)||isList(t),G=state.groups[GID];
   let h='<h2 class="h2" id="tedTitle">'+(ted.isNew?'Yeni görev':'Görevi düzenle')+'</h2>'+
     '<label class="fl">Ad<input type="text" id="tedName" value="'+esc(t.name)+'" maxlength="40"></label>';
   if(!es) h+='<div class="ed-row"><label class="fl" style="flex:1">Hedef<input type="number" id="tedTarget" min="1" inputmode="numeric" value="'+esc(t.target)+'"></label><label class="fl" style="flex:1">Birim<select id="tedUnit">'+UNITS.map(x=>'<option value="'+x[0]+'"'+(x[0]===t.unit?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></label></div>';
-  else h+='<p class="ed-note">Her gün 3 isim önerilir; her ismin hedefi kendi sayısıdır.</p>';
+  else h+='<p class="ed-note">'+(isList(t)?(t.kind==='dua'?'Her gün Peygamberimizin dualarından üç tanesi gelir.':'Okunacak zikirler kaynaklarıyla birlikte hazırdır; her birinin tekrar sayısı kendisine göredir.'):'Her gün 3 isim önerilir; her ismin hedefi kendi sayısıdır.')+'</p>';
   h+='<div class="ed-row"><label class="fl" style="flex:1">Dönem<select id="tedPer"'+(es?' disabled':'')+'>'+['d','w','m'].map(x=>'<option value="'+x+'"'+(x===t.period?' selected':'')+'>'+PNAME[x]+'</option>').join('')+'</select></label><label class="fl" style="flex:1">Kategori<select id="tedCat">'+CATS.map(c=>'<option value="'+c[0]+'"'+(c[0]===t.cat?' selected':'')+'>'+c[1]+'</option>').join('')+'</select></label></div>';
   if(G&&!es) h+='<div class="fl">Kimin görevi<div class="seg" style="margin-top:6px"><button data-tsrc="p" aria-pressed="'+(ted.src==='p')+'">Benim</button><button data-tsrc="g" aria-pressed="'+(ted.src==='g')+'">'+esc(sharedLabel())+' ('+esc(G.name||'grup')+')</button></div></div>';
   h+='<div class="ed-row" style="margin-top:16px">'+(ted.isNew?'':'<button class="btn ghost danger" data-tact="del">Sil</button>')+'<span style="flex:1"></span><button class="btn ghost" data-tact="cancel">Vazgeç</button><button class="btn plus" data-tact="save">Kaydet</button></div>';
@@ -1303,6 +1411,7 @@ function viewYear(){
 function cellText(t,u,k,d){
   const v=val(t,u,k);
   if(isEsma(t)){ let n=0; for(const i of esmaOfDay(d)) if(val(t,u,k,'esma_'+(i+1))>=ESMA[i][2])n++; return n+'/3'; }
+  if(isList(t)){ const [n,m]=listDone(t,u,k,d); return n+'/'+m; }
   if(isBinary(t)) return v>=1?'1/1':'0/1';
   if(isDk(t)) return Math.floor(v/60)+'/'+t.target+' dk';
   return NF.format(Math.floor(v))+'/'+NF.format(t.target);
@@ -1320,8 +1429,8 @@ function viewAile(){
   }
   const G=state.groups[GID],ms=state.members;
   let avg=0; for(const m of ms) avg+=comp(m.id,'d',now).pct; avg/=Math.max(1,ms.length);
-  let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="aileStar" data-p="'+avg.toFixed(4)+'"')+'<div><p class="sum-who">'+esc(GTYPES[G.type]||'Grup')+', '+ms.length+' kişi</p><p class="sum-main">'+esc(G.name||'Grup')+'</p><p class="sum-sub">Bugünkü ortalama, '+esc(fDMl.format(now))+'</p></div></div></section>'+
-    '<section class="card card-pad" style="margin-top:14px"><h2 class="h2">Gruba ekle</h2><p class="muted small" style="margin:.2rem 0 10px">Telefonu olan kişiye davet linki gönder. Telefonu olmayan biri için (örneğin çocuğun) sadece adını ekle; onun adına bu telefondan işaretleyebilirsin.</p><div class="join-row" style="flex-wrap:wrap"><button class="btn plus" data-g="invite">Davet linki gönder</button><input type="text" id="addName" placeholder="Telefonu olmayan kişinin adı" maxlength="30" aria-label="Ad" style="flex:1;min-width:10rem"><button class="btn" data-g="add">Ekle</button></div></section><div style="height:14px"></div>';
+  let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="aileStar" data-p="'+avg.toFixed(4)+'"')+'<div><p class="sum-who">'+esc(GTYPES[G.type]||'Grup')+', '+ms.length+' kişi</p><p class="sum-main">'+esc(G.name||'Grup')+'</p><p class="sum-sub">Bugünkü ortalama</p></div></div></section>';
+  h+='<div style="height:14px"></div>';
   for(const m of ms){
     const vals=[['Bugün',comp(m.id,'d',now).pct],['Bu hafta',comp(m.id,'w',now).pct],['Bu ay',comp(m.id,'m',now).pct],[String(y),yearStats(m.id,y).pct||0]];
     const st=streak(m.id);
@@ -1339,6 +1448,7 @@ function viewAile(){
     h+='</tr>';
   }
   h+='</tbody></table></section><div style="height:14px"></div>';
+  h+='<section class="card card-pad"><h2 class="h2">Gruba ekle</h2><p class="muted small" style="margin:.2rem 0 10px">Telefonu olan kişiye davet linki gönder. Telefonu olmayan biri için (örneğin çocuğun) adını ekle; onun yerine sen işaretlersin.</p><button class="btn plus" data-g="invite">Davet linki gönder</button><div class="join-row" style="margin-top:10px"><input type="text" id="addName" placeholder="Telefonu olmayan kişinin adı" maxlength="30" aria-label="Ad" style="flex:1;min-width:0"><button class="btn" data-g="add">Ekle</button></div></section><div style="height:14px"></div>';
   if(gs.length>1) h+='<section class="card card-pad"><h2 class="h2">Gruplarım</h2><div class="cats" style="margin-top:8px">'+gs.map(g=>'<button class="chip" data-gid2="'+esc(g)+'" aria-pressed="'+(g===GID)+'">'+esc(state.groups[g].name||'Grup')+'</button>').join('')+'</div></section><div style="height:14px"></div>';
   return h+newGroupForm(false);
 }
@@ -1363,6 +1473,119 @@ function render(){
   if(cs) renderCounter();
   if(fsel){ try{ const el=v.querySelector(fsel); if(el&&!el.disabled) el.focus({preventScroll:true}); }catch(e){} }
 }
+
+/* okuma ekranı: sabah/akşam zikirleri ve dualar */
+const qMem={};
+const arNum=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+function qCached(refs){ const k=refs.join('|'); if(qMem[k]) return qMem[k]; try{ const c=JSON.parse(lsGet('vird:q:'+k)||'null'); if(c&&c.ar) return qMem[k]=c; }catch(e){} return null; }
+async function qFetch(path){ for(const ed of ['tr.diyanet','tr.vakfi']){ try{ const j=await httpGet('https://api.alquran.cloud/v1'+path+'/editions/quran-uthmani,'+ed); if(j&&j.code===200&&Array.isArray(j.data)&&j.data.length>=2) return {j,ed}; }catch(e){} } throw new Error('yüklenemedi'); }
+const qBusy={},qFail={};
+async function qLoad(refs){
+  const k=refs.join('|'); if(qCached(refs)||qBusy[k]||(qFail[k]&&Date.now()-qFail[k]<30000)) return; qBusy[k]=1;
+  try{
+    const ar=[],tr=[]; let bes='',ed='tr.diyanet';
+    for(const r of refs){
+      if(r.indexOf(':')>0){ const {j,ed:e}=await qFetch('/ayah/'+r); ed=e; const n=j.data[0].numberInSurah; ar.push(j.data[0].text+' ﴿'+arNum(n)+'﴾'); tr.push((refs.length>1?'('+n+') ':'')+j.data[1].text); }
+      else { const {j,ed:e}=await qFetch('/surah/'+r); ed=e; const A=j.data[0].ayahs||[],T=j.data[1].ayahs||[];
+        A.forEach((a,i)=>{ let x=String(a.text||''); if(i===0&&+r!==1&&+r!==9){ const w=x.split(' '); if(w[0]&&w[0].indexOf('بِسْمِ')===0){ bes=w.slice(0,4).join(' '); x=w.slice(4).join(' '); } } ar.push(x+' ﴿'+arNum(a.numberInSurah)+'﴾'); tr.push('('+a.numberInSurah+') '+((T[i]||{}).text||'')); }); }
+    }
+    const v={ar:ar.join(' '),tr:tr.join(' '),bes,ed}; qMem[k]=v; lsSet('vird:q:'+k,JSON.stringify(v));
+  }catch(e){ console.warn(e); qFail[k]=Date.now(); }
+  delete qBusy[k]; if(rd) renderReader();
+}
+let rd=null;
+function openReader(tid){
+  const t=tasksOf(state.view).find(x=>x.id===tid); if(!t||!canEditTask(t)) return;
+  rd={tid,u:state.view,k:docKey(period(),state.cursor),d:state.cursor};
+  $('reader').hidden=false; document.body.style.overflow='hidden'; $('rdBody').scrollTop=0; renderReader(); $('reader').focus({preventScroll:true});
+  const it=listItems(t,rd.d),first=it.findIndex(x=>val(t,rd.u,rd.k,'z_'+x.id)<x.rep);
+  if(first>0) setTimeout(()=>{ const c=$('rdBody').querySelector('[data-zi="'+first+'"]'); if(c) c.scrollIntoView({block:'start'}); },60);
+}
+function closeReader(){ rd=null; $('reader').hidden=true; document.body.style.overflow=''; render(); }
+function zCard(t,x,i){
+  const v=Math.min(x.rep,Math.floor(val(t,rd.u,rd.k,'z_'+x.id))),done=v>=x.rep;
+  let body;
+  if(x.q){ const c=qCached(x.q),qk=x.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(x.q),0); body='<p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi. İlk açılışta internet gerekir; bağlantı gelince tekrar denenecek.':'Âyet metni yükleniyor… (ilk seferde internet gerekir)')+'</p>'; }
+    else body=(c.bes?'<p class="zc-bes" lang="ar" dir="rtl">'+esc(c.bes)+'</p>':'')+'<p class="zc-ar" lang="ar" dir="rtl">'+esc(c.ar)+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p>'; }
+  else body='<p class="zc-ar" lang="ar" dir="rtl">'+esc(x.ar)+'</p><p class="zc-ok">'+esc(x.ok)+'</p><p class="zc-tr">'+esc(x.tr)+'</p>';
+  return '<article class="zcard'+(done?' done':'')+'" data-zi="'+i+'"><header><b>'+esc(x.t)+'</b><span class="zc-rep">'+(x.rep>1?x.rep+' kez':'1 kez')+'</span></header>'+body+
+    (x.f?'<p class="zc-f">'+esc(x.f)+'</p>':'')+'<p class="zc-src">Kaynak: '+esc(x.src)+'</p>'+
+    '<div class="zc-act">'+(v>0?'<button class="btn ghost" data-rd="dec" aria-label="Bir geri al">Geri al</button>':'<span></span>')+
+    (done?'<span class="zc-ok2">'+CHECK+' Okundu</span>':'<button class="btn plus zc-btn" data-rd="inc">'+(x.rep>1?'Okudum '+v+'/'+x.rep:'Okudum')+'</button>')+'</div></article>';
+}
+function renderReader(){
+  if(!rd) return; const t=tasksOf(rd.u).find(x=>x.id===rd.tid); if(!t){ closeReader(); return; }
+  const it=listItems(t,rd.d),[n,m]=listDone(t,rd.u,rd.k,rd.d);
+  $('rdTitle').textContent=t.name; $('rdProg').textContent=n+' / '+m+' '+listWord(t)+(n>=m?', tamamlandı':'');
+  $('rdBar').style.setProperty('--p',(m?n/m:0).toFixed(3));
+  const note=t.kind==='sabah'?'Sabah zikirleri sabah namazından sonra, gün ağarırken okunur.':t.kind==='aksam'?'Akşam zikirleri ikindiden sonra ya da akşam okunur.':'Bugün için Peygamberimizin dualarından üç tanesi. Her gün farklı dualar gelir.';
+  const b=$('rdBody'),st=b.scrollTop;
+  b.innerHTML='<p class="rd-note">'+esc(note)+' Metinlere dokunarak değil, alttaki düğmeyle ilerlersin.</p>'+it.map((x,i)=>zCard(t,x,i)).join('')+(n>=m?'<div class="rd-end"><p>Allah kabul etsin.</p><button class="btn plus" data-rd="close">Kapat</button></div>':'');
+  b.scrollTop=st;
+}
+$('rdBody').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rd]'); if(!b||!rd) return; const a=b.dataset.rd;
+  if(a==='close'){ closeReader(); return; }
+  const card=b.closest('.zcard'); if(!card) return; const t=tasksOf(rd.u).find(x=>x.id===rd.tid); if(!t) return;
+  const it=listItems(t,rd.d),i=+card.dataset.zi,x=it[i],f='z_'+x.id,v=Math.floor(val(t,rd.u,rd.k,f));
+  if(a==='inc'){ const nv=Math.min(x.rep,v+1); setVal(t,rd.u,rd.k,f,nv);
+    if(nv>=x.rep){ buzz([20,40,20]); renderReader(); const nx=it.findIndex((y,j)=>j>i&&val(t,rd.u,rd.k,'z_'+y.id)<y.rep); const c=nx>=0&&$('rdBody').querySelector('[data-zi="'+nx+'"]'); if(c) setTimeout(()=>c.scrollIntoView({behavior:'smooth',block:'start'}),120); }
+    else { buzz(10); const btn=card.querySelector('.zc-btn'); if(btn) btn.textContent='Okudum '+nv+'/'+x.rep; const ab=card.querySelector('.zc-act'); if(v===0) renderReader(); } }
+  else if(a==='dec'){ setVal(t,rd.u,rd.k,f,Math.max(0,v-1)); renderReader(); }
+});
+$('rdClose').addEventListener('click',closeReader);
+
+/* kıble */
+const KAABA=[21.422487,39.826206];
+function qiblaBearing(lat,lng){ const r=Math.PI/180,f1=lat*r,f2=KAABA[0]*r,dl=(KAABA[1]-lng)*r; const y=Math.sin(dl)*Math.cos(f2),x=Math.cos(f1)*Math.sin(f2)-Math.sin(f1)*Math.cos(f2)*Math.cos(dl); return (Math.atan2(y,x)/r+360)%360; }
+async function kibleKoord(){
+  if(!VK.il) return null; const key=vkKey(); let c=null; try{ c=JSON.parse(lsGet('vird:kc')||'null'); }catch(e){}
+  if(c&&c.key===key) return c;
+  const adr=(VK.ilce&&VK.ilce!=='Merkez'?VK.ilce+', ':'')+VK.il+', Türkiye';
+  const j=await httpGet('https://api.aladhan.com/v1/timingsByAddress?address='+encodeURIComponent(adr)+'&method=13');
+  const m=j&&j.data&&j.data.meta; if(!m||m.latitude==null) throw new Error('konum bulunamadı');
+  c={key,lat:+m.latitude,lng:+m.longitude}; lsSet('vird:kc',JSON.stringify(c)); return c;
+}
+const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null};
+const compassDir=a=>['kuzey','kuzey-kuzeydoğu','kuzeydoğu','doğu-kuzeydoğu','doğu','doğu-güneydoğu','güneydoğu','güney-güneydoğu','güney','güney-güneybatı','güneybatı','batı-güneybatı','batı','batı-kuzeybatı','kuzeybatı','kuzey-kuzeybatı'][Math.round(((a%360)+360)%360/22.5)%16];
+function kbOrient(e){
+  let h=null;
+  if(typeof e.webkitCompassHeading==='number') h=e.webkitCompassHeading;
+  else if(e.absolute&&e.alpha!=null) h=360-e.alpha;
+  if(h==null) return;
+  const so=(screen.orientation&&screen.orientation.angle)||0; h=(h+so+360)%360;
+  kb.got=true;
+  if(kb.sm==null) kb.sm=h; else { let d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.25+360)%360; }
+  kbDraw();
+}
+function kbDraw(){
+  const dial=$('kbDial'),msg=$('kbMsg'); if(!dial) return;
+  if(kb.q==null){ return; }
+  if(kb.sm==null){ dial.style.transform='rotate(0deg)'; return; }
+  dial.style.transform='rotate('+(-kb.sm).toFixed(1)+'deg)';
+  const diff=Math.abs(((kb.q-kb.sm+540)%360)-180),al=diff<=4;
+  $('kible').classList.toggle('aligned',al);
+  if(al&&!kb.aligned) buzz(40); kb.aligned=al;
+  msg.textContent=al?'Kıble yönündesin.':'Telefonu düz tut ve Kâbe işareti üstteki çizgiye gelene kadar dön.';
+}
+async function openKible(){
+  const tk=document.querySelector('#kible .kb-ticks'); if(tk&&!tk.childNodes.length){ let g=''; for(let i=0;i<72;i++){ const a2=i*5*Math.PI/180,l=i%18===0?12:i%2===0?7:4,r1=92,r2=92-l; g+='<line x1="'+(100+r1*Math.sin(a2)).toFixed(1)+'" y1="'+(100-r1*Math.cos(a2)).toFixed(1)+'" x2="'+(100+r2*Math.sin(a2)).toFixed(1)+'" y2="'+(100-r2*Math.cos(a2)).toFixed(1)+'"/>'; } tk.innerHTML=g; }
+  $('kible').hidden=false; document.body.style.overflow='hidden'; kb.on=true; kb.sm=null; kb.got=false; kb.aligned=false; kb.q=null;
+  $('kbLoc').textContent=VK.il?vkLabel():''; $('kbInfo').textContent=''; $('kbMsg').textContent='';
+  $('kbNeed').hidden=!!VK.il; $('kbWrap').hidden=!VK.il;
+  if(!VK.il) return;
+  $('kbMsg').textContent='Konum bilgisi hazırlanıyor…';
+  try{ const c=await kibleKoord(); if(!kb.on) return; kb.q=qiblaBearing(c.lat,c.lng);
+    $('kbMark').style.transform='rotate('+kb.q.toFixed(1)+'deg)';
+    $('kbInfo').textContent='Kıble açısı: kuzeyden saat yönünde '+Math.round(kb.q)+'° ('+compassDir(kb.q)+')';
+    $('kbMsg').textContent='Pusula bekleniyor…'; kbDraw();
+  }catch(e){ console.warn(e); $('kbMsg').textContent='Kıble yönü için bir kez internet gerekiyor. Bağlantını kontrol edip tekrar aç.'; return; }
+  window.addEventListener('deviceorientationabsolute',kbOrient,true); window.addEventListener('deviceorientation',kbOrient,true);
+  clearTimeout(kb.timer); kb.timer=setTimeout(()=>{ if(kb.on&&!kb.got) $('kbMsg').textContent='Telefonunda pusula bulunamadı. Kıble, kuzeyden saat yönünde '+Math.round(kb.q)+'° yönündedir; bir pusula ya da güneşin yönüyle bulabilirsin.'; },2500);
+}
+function closeKible(){ kb.on=false; clearTimeout(kb.timer); window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
+$('kbClose').addEventListener('click',closeKible);
+$('kbSet').addEventListener('click',()=>{ closeKible(); openSettings('vakit'); });
 
 /* zamanlayıcı */
 function startTimer(t,u,k){ if(timer) stopTimer(); timer={owner:ownerKey(t,u),u,k,tid:t.id,f:t.id,start:Date.now(),base:+valsOf(t,u,k)[t.id]||0}; saveTimer(); render(); }
@@ -1486,6 +1709,7 @@ $('view').addEventListener('click',e=>{
   const mv=e.target.closest('[data-mv]'); if(mv){ moveTask(mv.closest('li.task').dataset.id,+mv.dataset.mv); return; }
   if(e.target.closest('[data-goto2]')){ state.tab='aile'; savePrefs(); render(); window.scrollTo(0,0); return; }
   if(e.target.closest('[data-vk="ayar"]')){ openSettings('vakit'); return; }
+  if(e.target.closest('[data-vk="kible"]')){ openKible(); return; }
   if(e.target.closest('[data-vk="tekrar"]')){ state.vkErr=''; ensureVakitler(true); return; }
   const gb=e.target.closest('[data-g],[data-gid2]');
   if(gb){
@@ -1505,6 +1729,7 @@ $('view').addEventListener('click',e=>{
   const t=state.tasks.find(x=>x.id===li.dataset.id); if(!t) return;
   const u=state.view,k=docKey(period(),state.cursor),a=b.dataset.act;
   if(a==='open') openCounter(t.id,li.dataset.ei);
+  else if(a==='read') openReader(t.id);
   else if(a==='toggle'){ setVal(t,u,k,t.id,val(t,u,k)>=1?0:1); render(); }
   else if(a==='inc'){ const v=Math.floor(val(t,u,k))+1; setVal(t,u,k,t.id,v); if(v>=tgt(t)) buzz([30,60,30]); render(); }
   else if(a==='dec'){ setVal(t,u,k,t.id,Math.floor(val(t,u,k))-1); render(); }
@@ -1569,9 +1794,9 @@ function renderSheet(focusSel){
       h+='<h3>Yazı boyutu</h3><div class="seg opts" role="group">'+[['0.9','Küçük'],['1','Normal'],['1.12','Büyük'],['1.25','Çok büyük']].map(([v,n])=>'<button data-fs="'+v+'" aria-pressed="'+(String(APP.fs)===v)+'" style="font-size:'+(+v)+'rem">'+n+'</button>').join('')+'</div>';
       h+='<h3>Tema</h3><div class="seg opts" role="group">'+[['auto','Sistem'],['light','Açık'],['dark','Koyu']].map(([v,n])=>'<button data-th="'+v+'" aria-pressed="'+(APP.theme===v)+'">'+n+'</button>').join('')+'</div><p class="ed-note">Görünüm ayarları hemen uygulanır ve sadece bu telefon için geçerlidir.</p>';
     } else if(sec==='gorev'){
-      h+='<p class="ed-note" style="margin-top:4px">Tek bir görevi değiştirmenin en kolay yolu: Görevler sekmesinde <b>Düzenle</b>\'ye bas ya da göreve basılı tut. Burada listeleri toplu düzenleyebilirsin.</p>';
-  h+='<h3>Görevlerim</h3><p class="ed-note" style="margin-top:0">Sadece senin listen; bütün gruplarında aynı kalır.</p>'+listEditor('p',draft.pt)+'<p><button class="btn ghost danger" data-act="reset">Varsayılan listeme dön</button></p>';
-      if(G) h+='<h3>'+sharedLabel()+' görevler ('+esc(G.name||'')+')</h3><p class="ed-note" style="margin-top:0">Bu gruptaki herkesin ortak görevleri; tek kayıt tutulur, kim işaretlerse herkeste görünür.</p>'+listEditor('g',draft.gt);
+      h+='<p class="ed-note" style="margin-top:4px">Görev eklemek, değiştirmek, silmek ya da sırasını değiştirmek için Görevler sekmesinde <b>Düzenle</b>\'ye bas. Bir göreve basılı tutarak da düzenleyebilirsin.</p>';
+      h+='<p><button class="btn plus" data-act="goedit">Görevleri düzenle</button></p>';
+      h+='<h3>Varsayılana dön</h3><p class="ed-note" style="margin-top:0">Kendi görev listeni uygulamanın ilk hâline döndürür. Kayıtların silinmez.</p><p><button class="btn ghost danger" data-act="reset">Listemi varsayılana döndür</button></p>';
     } else if(sec==='grup'){
   if(G){
     h+='<h3>Grup: '+esc(G.name||'')+'</h3><input type="text" class="full-w" id="gNameEd" value="'+esc(draft.gname)+'" maxlength="40" aria-label="Grup adı">';
@@ -1612,7 +1837,8 @@ $('sheetBody').addEventListener('click',e=>{
   else if(a==='perm') scheduleReminders(true).then(()=>{ if(draft) renderSheet(); });
   else if(a==='addt'){ arr.push({id:uid('t'),name:'',period:b.dataset.p,target:1,unit:'kez',scope:b.dataset.l==='g'?'aile':'kisi',cat:'diger'}); renderSheet('[data-l="'+b.dataset.l+'"][data-ti="'+(arr.length-1)+'"][data-f="name"]'); }
   else if(a==='delt'){ arr.splice(+b.dataset.ti,1); renderSheet(); }
-  else if(a==='reset') armConfirm(b,'Emin misin? Tekrar dokun',()=>{ draft.pt=clone(DEF_PERSONAL); renderSheet(); });
+  else if(a==='reset') armConfirm(b,'Emin misin? Tekrar dokun',()=>{ draft.pt=clone(DEF_PERSONAL); renderSheet(); updateFoot(); toast('Kaydet\'e bastığında listen varsayılana döner.'); });
+  else if(a==='goedit'){ closeSettings(); state.tab=state.per='d'; state.cursor=sod(new Date()); state.view=ME; state.editMode=true; savePrefs(); render(); window.scrollTo(0,0); enterAnim(); }
   else if(a==='kick') armConfirm(b,'Emin misin?',()=>{ const m=draft.managed.splice(+b.dataset.mi,1)[0]; if(m) removeManaged(m.id).catch(()=>toast('Çıkarılamadı.')); renderSheet(); });
   else if(a==='leave') armConfirm(b,'Gruptan ayrılsın mı? Tekrar dokun',()=>{ const g=GID; closeSettings(); leaveGroup(g).then(()=>toast('Gruptan ayrıldın.')).catch(()=>toast('Ayrılınamadı.')); });
   else if(a==='wipe') armConfirm(b,'Kalıcı olarak silinsin mi? Tekrar dokun',()=>{ closeSettings(); deleteMyData(); });
@@ -1642,7 +1868,7 @@ $('sheetX').addEventListener('click',closeSettings);
 $('sheetBg').addEventListener('click',closeSettings);
 $('btnSettings').addEventListener('click',openSettings);
 $('zBottom').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.id==='zIn'){ e.preventDefault(); const b=$('zBottom').querySelector('[data-z="setm"]'); if(b) b.click(); } });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(ted) closeTaskEditor(); else if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(kb.on) closeKible(); else if(rd) closeReader(); else if(ted) closeTaskEditor(); else if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
 
 init();
 })();
