@@ -1641,7 +1641,7 @@ function render(){
 const DERS={},DERS_IL={}; for(const il of ILIMLER) for(const d of il.dersler){ DERS[d.id]=d; DERS_IL[d.id]=il; }
 const ILIM_GOREV={arapca:'arapca',tefsir:'tefsir',hadis:'hadis'};
 const dersDone=id=>!!(((state.people[ME]||{}).ilim||{})[id]);
-function nextDers(){ for(const il of ILIMLER) for(const d of il.dersler) if(!dersDone(d.id)) return d; return null; }
+function nextDers(){ for(const sev of ['Başlangıç','Orta']) for(const il of ILIMLER) for(const d of il.dersler) if(d.sev===sev&&!dersDone(d.id)) return d; return null; }
 function ilimCardHTML(){
   const nd=nextDers(); if(!nd) return '';
   const il=DERS_IL[nd.id];
@@ -1658,7 +1658,7 @@ function viewIlim(){
       h+='<section class="group" style="--rc:var(--c-'+il.cat+');margin-top:14px"><div class="g-head"><h3 class="h2">'+sev+'</h3><span>'+ds.filter(d=>dersDone(d.id)).length+' / '+ds.length+'</span></div><ul class="tasks">'+
         ds.map(d=>'<li class="task'+(dersDone(d.id)?' done':'')+'">'+ringHTML(dersDone(d.id)?1:0,il.cat)+'<button class="t-main" data-ders="'+d.id+'"><span class="t-name">'+esc(d.t)+'</span><span class="t-val">'+d.dk+' dk okuma, '+d.test.length+' soru'+(dersDone(d.id)?', tamamlandı':'')+'</span></button><div class="t-ctl"><button class="btn'+(dersDone(d.id)?'':' plus')+'" data-ders="'+d.id+'">'+(dersDone(d.id)?'Tekrar':'Başla')+'</button></div></li>').join('')+'</ul></section>';
     }
-    h+='<p class="ed-note" style="margin:14px 2px 0">Yeni dersler eklenecek. Bilgileri derinleştirmek ve sorularına cevap almak için bir hocaya danışmanı tavsiye ederiz.</p>';
+    h+='<p class="ed-note" style="margin:14px 2px 0">Bilgileri derinleştirmek ve sorularına cevap almak için bir hocaya danışmanı tavsiye ederiz.</p>';
     return h;
   }
   const nd=nextDers();
