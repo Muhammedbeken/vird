@@ -526,6 +526,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .dz-exp.no{color:var(--danger)}
 .dz-score{margin:10px 2px 4px;font-weight:700}
 .tabbar button{font-size:.7rem}
+.sec{font-family:var(--serif);font-weight:600;font-size:1.25rem;margin:22px 2px 10px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -548,7 +549,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
   <button data-tab="bugun"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5L20 11"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>Bugün</button>
   <button data-tab="gorev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>Görevler</button>
   <button data-tab="ilim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5v13c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/></svg>İlim</button>
-  <button data-tab="y"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 17v-5M11 17V6M16 17v-3M20 17V9"/></svg>Yıllık</button>
+  <button data-tab="y"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 17v-5M11 17V6M16 17v-3M20 17V9"/></svg>Durum</button>
   <button data-tab="aile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c3 .1 5.5 2 5.5 5.4"/></svg>Gruplar</button>
 </div></nav>
 
@@ -658,13 +659,15 @@ const isEsma=t=>t.unit==='esma';
 const isDk=t=>t.unit==='dk';
 const tgt=t=>isDk(t)?t.target*60:t.target;
 const isList=t=>t.unit==='liste';
+const isNamaz=t=>t.unit==='namaz';
+const NAMAZ=[['sabah','Sabah','2 sünnet, 2 farz','imsak'],['ogle','Öğle','4 sünnet, 4 farz, 2 son sünnet','ogle'],['ikindi','İkindi','4 sünnet, 4 farz','ikindi'],['aksam','Akşam','3 farz, 2 sünnet','aksam'],['yatsi','Yatsı','4 sünnet, 4 farz, 2 son sünnet, 3 vitir','yatsi']];
 const isQuranTask=t=>t.unit==='sayfa'&&(t.id==='kuran'||t.id==='kuran_ortak'||/KUR.?AN/.test(String(t.name||'').toLocaleUpperCase('tr-TR')));
-const isBinary=t=>!isEsma(t)&&!isDk(t)&&!isList(t)&&t.target===1;
+const isBinary=t=>!isEsma(t)&&!isDk(t)&&!isList(t)&&!isNamaz(t)&&t.target===1;
 const ZMAP={}; for(const L of [ZIKIR_SABAH,ZIKIR_AKSAM,NEBEVI_DUALAR]) for(const x of L) ZMAP[x.id]=x;
 const dayIdx=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
 function duaOfDay(d){ const L=NEBEVI_DUALAR.length,b=(((dayIdx(d)*3)%L)+L)%L; return [0,1,2].map(i=>NEBEVI_DUALAR[(b+i)%L]); }
 function listItems(t,d){ return t.kind==='aksam'?ZIKIR_AKSAM:t.kind==='dua'?duaOfDay(d||state.cursor):ZIKIR_SABAH; }
-const capOf=(t,f)=>f.indexOf('esma_')===0?ESMA[+f.slice(5)-1][2]:f.indexOf('z_')===0?((ZMAP[f.slice(2)]||{}).rep||1):tgt(t);
+const capOf=(t,f)=>f.indexOf('nm_')===0?1:f.indexOf('esma_')===0?ESMA[+f.slice(5)-1][2]:f.indexOf('z_')===0?((ZMAP[f.slice(2)]||{}).rep||1):tgt(t);
 function listDone(t,u,k,d){ let n=0; const it=listItems(t,d); for(const x of it) if(val(t,u,k,'z_'+x.id)>=x.rep) n++; return [n,it.length]; }
 const listWord=t=>t.kind==='dua'?'dua':'zikir';
 function mmss(s){ s=Math.floor(s); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60; return h?h+':'+pad(m)+':'+pad(x):m+':'+pad(x); }
@@ -721,6 +724,7 @@ function normTasks(ts){
   if(!Array.isArray(ts)) return null;
   return ts.filter(t=>t&&t.id&&t.name&&PNAME[t.period]).map(t=>{ const x=Object.assign({},t);
     if(x.id==='esma'){x.unit='esma';x.target=3;}
+    if(x.unit==='namaz'){ x.target=5; }
     if(x.unit==='liste'){ x.target=1; if(!['sabah','aksam','dua'].includes(x.kind)) x.kind=x.id==='aksam_zikir'?'aksam':x.id==='peygamber_dua'?'dua':'sabah'; }
     x.target=Math.max(1,parseInt(x.target,10)||1); if(x.scope!=='aile')x.scope='kisi';
     if(!CATNAME[x.cat]) x.cat=CATMAP[x.id]||'diger'; return x; });
@@ -733,9 +737,10 @@ function val(t,u,k,f){ f=f||t.id; let v=+valsOf(t,u,k)[f]||0; if(timerOn(t,u,k,f
 function frac(t,u,k,date){
   if(isEsma(t)){ let s=0; for(const i of esmaOfDay(date)) s+=Math.min(1,val(t,u,k,'esma_'+(i+1))/ESMA[i][2]); return s/3; }
   if(isList(t)){ const it=listItems(t,date); let s=0; for(const x of it) s+=Math.min(1,val(t,u,k,'z_'+x.id)/x.rep); return it.length?s/it.length:0; }
+  if(isNamaz(t)){ let n=0; for(const x of NAMAZ) if(val(t,u,k,'nm_'+x[0])>=1) n++; return n/5; }
   return Math.min(1,val(t,u,k)/tgt(t));
 }
-function amount(t,u,k){ if(isList(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('z_')===0) s+=+v[f]||0; return s; } if(isEsma(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('esma_')===0) s+=+v[f]||0; return s; } return val(t,u,k); }
+function amount(t,u,k){ if(isNamaz(t)){ let n=0; for(const x of NAMAZ) if(val(t,u,k,'nm_'+x[0])>=1) n++; return n; } if(isList(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('z_')===0) s+=+v[f]||0; return s; } if(isEsma(t)){ let s=0; const v=valsOf(t,u,k); for(const f in v) if(f.indexOf('esma_')===0) s+=+v[f]||0; return s; } return val(t,u,k); }
 function comp(u,p,d){
   const ts=tasksOf(u).filter(t=>t.period===p); if(!ts.length||!u) return {pct:0,done:0,total:0};
   const k=docKey(p,d); let s=0,done=0;
@@ -1059,11 +1064,14 @@ async function scheduleReminders(ask){
 }
 let remDone=false;
 function addNewTasksOnce(){
-  if(lsGet('vird:zk1')) return; const P=state.people[ME]; if(!P||!db) return; lsSet('vird:zk1','1');
-  if(!Array.isArray(P.tasks)) return;
-  const have=new Set(P.tasks.map(t=>t.id)),add=DEFAULT_TASKS.filter(t=>['sabah_zikir','aksam_zikir','peygamber_dua'].includes(t.id)&&!have.has(t.id));
-  if(!add.length) return; const L=P.tasks.slice(); let at=L.findIndex(t=>t.id==='esma'); at=at<0?L.length:at+1;
-  L.splice(at,0,...clone(add)); db.collection('people').doc(ME).update({tasks:L}).catch(()=>{});
+  const P=state.people[ME]; if(!P||!db||!Array.isArray(P.tasks)) return;
+  const needZ=!lsGet('vird:zk1'),needN=!lsGet('vird:nm1'); if(!needZ&&!needN) return;
+  lsSet('vird:zk1','1'); lsSet('vird:nm1','1');
+  let L=P.tasks.slice(); const have=new Set(L.map(t=>t.id)); let changed=false;
+  if(needZ){ const add=DEFAULT_TASKS.filter(t=>['sabah_zikir','aksam_zikir','peygamber_dua'].includes(t.id)&&!have.has(t.id));
+    if(add.length){ let at=L.findIndex(t=>t.id==='esma'); at=at<0?L.length:at+1; L.splice(at,0,...clone(add)); changed=true; } }
+  if(needN&&!have.has('namaz_vakit')){ const nt=DEFAULT_TASKS.find(t=>t.id==='namaz_vakit'); if(nt){ L=[clone(nt)].concat(L); changed=true; } }
+  if(changed){ P.tasks=L; bump(); db.collection('people').doc(ME).update({tasks:L}).catch(()=>{}); }
 }
 function firstReminders(){ if(remDone) return; remDone=true; scheduleReminders(!lsGet('vird:remAsked')); lsSet('vird:remAsked','1'); }
 
@@ -1313,6 +1321,7 @@ function historyHTML(u){
 }
 function valText(t,u,k,f){
   const v=val(t,u,k,f),T=capOf(t,f||t.id);
+  if(isNamaz(t)){ return Math.round(frac(t,u,k,state.cursor)*5)+' / 5 vakit'; }
   if(isList(t)){ const [n,m]=listDone(t,u,k,state.cursor); return n+' / '+m+' '+listWord(t); }
   if(isBinary(t)) return v>=1?'Tamamlandı':'1 '+(t.unit==='adet'?'kez':t.unit);
   if(isDk(t)) return timerOn(t,u,k,t.id)?mmss(v)+' / '+mmss(T)+' sayılıyor':fmtMin(v/60)+' / '+fmtMin(t.target);
@@ -1333,6 +1342,16 @@ function rowHTML(t,u,k){
   const mo=bin?'<button class="t-main" data-act="toggle" aria-pressed="'+done+'" aria-label="'+n+(done?': yapıldı, geri al':': yapıldı olarak işaretle')+'">':op?'<button class="t-main" data-act="'+(isList(t)?'read':'open')+'" aria-label="'+n+(isList(t)?' metinlerini aç':' sayacını aç')+'">':'<div class="t-main">',mc=(bin||op)?'</button>':'</div>';
   const lead=bin?'<button class="chk lead'+(done?' on':'')+'" data-act="toggle" style="--rc:var(--c-'+(CATNAME[t.cat]?t.cat:'diger')+')" aria-hidden="true" tabindex="-1">'+CHECK+'</button>':ringHTML(f,t.cat);
   return '<li class="task'+(done?' done':'')+(run?' running':'')+(bin?' bin':'')+'" data-id="'+esc(t.id)+'">'+lead+mo+'<span class="t-name">'+n+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(valText(t,u,k))+'</span>'+mc+'<div class="t-ctl">'+ctl+'</div></li>';
+}
+function namazHTML(t,u,k,hideDone){
+  const ed=canEditTask(t),f=frac(t,u,k,state.cursor),n=Math.round(f*5),day=typeof vkDay==='function'?vkDay(state.cursor):null;
+  let h='<li class="task'+(f>=0.9999?' done':'')+'" data-id="'+esc(t.id)+'">'+ringHTML(f,t.cat)+'<div class="t-main"><span class="t-name">'+esc(t.name)+'</span><span class="t-val">'+n+' / 5 vakit, vaktinde ve sünnetleriyle</span></div></li>';
+  for(const [key,nm,rek,vk] of NAMAZ){ const on=val(t,u,k,'nm_'+key)>=1; if(hideDone&&on) continue;
+    const vt=day&&day[vk]?' ('+(key==='sabah'?'imsak ':'')+day[vk]+')':'';
+    const lead=ed?'<button class="chk lead'+(on?' on':'')+'" data-act="nmtog" data-nk="'+key+'" style="--rc:var(--c-'+(CATNAME[t.cat]?t.cat:'diger')+')" aria-hidden="true" tabindex="-1">'+CHECK+'</button>':ringHTML(on?1:0,t.cat);
+    const mo=ed?'<button class="t-main" data-act="nmtog" data-nk="'+key+'" aria-pressed="'+on+'" aria-label="'+nm+' namazı: '+(on?'kılındı, geri al':'vaktinde ve sünnetleriyle kıldım')+'">':'<div class="t-main">',mc=ed?'</button>':'</div>';
+    h+='<li class="task sub bin'+(on?' done':'')+'" data-id="'+esc(t.id)+'">'+lead+mo+'<span class="t-name">'+(key==='ogle'&&state.cursor.getDay()===5?'Cuma (öğle)':nm)+'<span class="t-ar" style="font-family:var(--sans);font-size:.85rem">'+esc(vt)+'</span></span><span class="t-val">'+(on?'Kılındı':rek)+'</span>'+mc+'</li>'; }
+  return h;
 }
 function esmaHTML(t,u,k,hideDone){
   const ids=esmaOfDay(state.cursor),ed=canEditTask(t),f=frac(t,u,k,state.cursor);
@@ -1373,7 +1392,7 @@ function viewPeriod(){
     const gts=ts.filter(t=>t.cat===cid); if(!gts.length) continue;
     const gd=gts.filter(t=>frac(t,u,k,d)>=0.9999).length;
     const em=state.editMode&&canEd;
-    const rows=em?gts.map(t=>editRowHTML(t)).join(''):gts.filter(t=>!hide||frac(t,u,k,d)<0.9999||state.keep.has(t.id)).map(t=>isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('');
+    const rows=em?gts.map(t=>editRowHTML(t)).join(''):gts.filter(t=>!hide||frac(t,u,k,d)<0.9999||state.keep.has(t.id)).map(t=>isNamaz(t)?namazHTML(t,u,k,false):isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('');
     if(!rows) continue;
     groups+='<section class="group" style="--rc:var(--c-'+cid+')"><div class="g-head"><h3 class="h2">'+esc(cname)+'</h3><span>'+gd+' / '+gts.length+'</span></div><ul class="tasks">'+rows+'</ul>'+(state.editMode&&canEd?'<button class="link addt" data-tedit="" data-tper="'+p+'" data-tcat="'+cid+'">+ '+esc(cname)+' görevi ekle</button>':'')+'</section>';
   }
@@ -1400,7 +1419,7 @@ function viewToday(){
   if(state.keepKey!==keepK){ state.keepKey=keepK; state.keep=new Set(ts.filter(t=>frac(t,u,k,d)<0.9999).map(t=>t.id)); }
   const left=ts.filter(t=>frac(t,u,k,d)<0.9999||state.keep.has(t.id));
   h+='<div class="toolbar"><h2 class="h2">Sıradaki işler</h2><button class="linkbtn" data-goper="d">Tüm görevler</button></div>';
-  if(left.some(t=>frac(t,u,k,d)<0.9999)) h+='<section class="group"><ul class="tasks">'+left.map(t=>isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('')+'</ul></section>';
+  if(left.some(t=>frac(t,u,k,d)<0.9999)) h+='<section class="group"><ul class="tasks">'+left.map(t=>isNamaz(t)?namazHTML(t,u,k,false):isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('')+'</ul></section>';
   else h+='<section class="card"><p class="empty">Bugünün görevleri tamam. Allah kabul etsin.</p></section>';
   const lw=cw.total-cw.done,lm=cm.total-cm.done;
   if(lw||lm) h+='<section class="card card-pad more">'+(lw?'<button class="mrow2" data-goper="w"><span>Bu haftadan <b>'+lw+'</b> görev kaldı</span><i>›</i></button>':'')+(lm?'<button class="mrow2" data-goper="m"><span>Bu aydan <b>'+lm+'</b> görev kaldı</span><i>›</i></button>':'')+'</section>';
@@ -1413,7 +1432,7 @@ function viewToday(){
 }
 function editRowHTML(t){
   const f=frac(t,ME,docKey(t.period,state.cursor),state.cursor);
-  const desc=isList(t)?(t.kind==='dua'?'Her gün 3 dua':listItems(t).length+' zikir'):isEsma(t)?'Her gün 3 isim':isDk(t)?fmtMin(t.target):NF.format(t.target)+(t.unit==='adet'?'':' '+t.unit);
+  const desc=isNamaz(t)?'Her gün 5 vakit':isList(t)?(t.kind==='dua'?'Her gün 3 dua':listItems(t).length+' zikir'):isEsma(t)?'Her gün 3 isim':isDk(t)?fmtMin(t.target):NF.format(t.target)+(t.unit==='adet'?'':' '+t.unit);
   return '<li class="task edit" data-id="'+esc(t.id)+'">'+ringHTML(f,t.cat)+'<button class="t-main" data-tedit="'+esc(t.id)+'"><span class="t-name">'+esc(t.name)+(t.scope==='aile'?' <span class="badge">'+sharedLabel()+'</span>':'')+'</span><span class="t-val">'+esc(desc)+'</span></button><div class="t-ctl"><button class="btn" data-mv="-1" aria-label="'+esc(t.name)+' yukarı">↑</button><button class="btn" data-mv="1" aria-label="'+esc(t.name)+' aşağı">↓</button></div></li>';
 }
 /* görev düzenleyici */
@@ -1433,11 +1452,11 @@ function openTaskEditor(id,per,cat){
 }
 function closeTaskEditor(){ ted=null; $('ted').hidden=true; $('tedBg').hidden=true; document.body.style.overflow=''; }
 function renderTaskEditor(){
-  const t=ted.t,es=isEsma(t)||isList(t),G=state.groups[GID];
+  const t=ted.t,es=isEsma(t)||isList(t)||isNamaz(t),G=state.groups[GID];
   let h='<h2 class="h2" id="tedTitle">'+(ted.isNew?'Yeni görev':'Görevi düzenle')+'</h2>'+
     '<label class="fl">Ad<input type="text" id="tedName" value="'+esc(t.name)+'" maxlength="40"></label>';
   if(!es) h+='<div class="ed-row"><label class="fl" style="flex:1">Hedef<input type="number" id="tedTarget" min="1" inputmode="numeric" value="'+esc(t.target)+'"></label><label class="fl" style="flex:1">Birim<select id="tedUnit">'+UNITS.map(x=>'<option value="'+x[0]+'"'+(x[0]===t.unit?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></label></div>';
-  else h+='<p class="ed-note">'+(isList(t)?(t.kind==='dua'?'Her gün Peygamberimizin dualarından üç tanesi gelir.':'Okunacak zikirler kaynaklarıyla birlikte hazırdır; her birinin tekrar sayısı kendisine göredir.'):'Her gün 3 isim önerilir; her ismin hedefi kendi sayısıdır.')+'</p>';
+  else h+='<p class="ed-note">'+(isNamaz(t)?'Beş vakit namaz; her vakti vaktinde ve sünnetleriyle kıldığında işaretlersin.':isList(t)?(t.kind==='dua'?'Her gün Peygamberimizin dualarından üç tanesi gelir.':'Okunacak zikirler kaynaklarıyla birlikte hazırdır; her birinin tekrar sayısı kendisine göredir.'):'Her gün 3 isim önerilir; her ismin hedefi kendi sayısıdır.')+'</p>';
   h+='<div class="ed-row"><label class="fl" style="flex:1">Dönem<select id="tedPer"'+(es?' disabled':'')+'>'+['d','w','m'].map(x=>'<option value="'+x+'"'+(x===t.period?' selected':'')+'>'+PNAME[x]+'</option>').join('')+'</select></label><label class="fl" style="flex:1">Kategori<select id="tedCat">'+CATS.map(c=>'<option value="'+c[0]+'"'+(c[0]===t.cat?' selected':'')+'>'+c[1]+'</option>').join('')+'</select></label></div>';
   if(G&&!es) h+='<div class="fl">Kimin görevi<div class="seg" style="margin-top:6px"><button data-tsrc="p" aria-pressed="'+(ted.src==='p')+'">Benim</button><button data-tsrc="g" aria-pressed="'+(ted.src==='g')+'">'+esc(sharedLabel())+' ('+esc(G.name||'grup')+')</button></div></div>';
   h+='<div class="ed-row" style="margin-top:16px">'+(ted.isNew?'':'<button class="btn ghost danger" data-tact="del">Sil</button>')+'<span style="flex:1"></span><button class="btn ghost" data-tact="cancel">Vazgeç</button><button class="btn plus" data-tact="save">Kaydet</button></div>';
@@ -1471,6 +1490,45 @@ function moveTask(id,dir){
 }
 
 function heatLevel(f){ return f>=0.9999?'l4':f>=0.67?'l3':f>=0.34?'l2':f>0?'l1':''; }
+function rangeStats(u,start,end){
+  const R={tasks:{},cats:{},sum:0,n:0}; if(start>end) return R;
+  const TS=tasksOf(u); for(const t of TS) R.tasks[t.id]={t,done:0,n:0,fs:0,amt:0};
+  const add=(p,d)=>{ const k=docKey(p,d); for(const t of TS){ if(t.period!==p) continue; const f=frac(t,u,k,d),st=R.tasks[t.id]; st.n++; st.fs+=f; if(f>=0.9999) st.done++; st.amt+=amount(t,u,k); R.sum+=f; R.n++; const c=R.cats[t.cat]||(R.cats[t.cat]={s:0,n:0}); c.s+=f; c.n++; } };
+  for(let d=new Date(start);d<=end;d=addDays(d,1)) add('d',d);
+  for(let w=sow(start);w<=end;w=addDays(w,7)) add('w',w);
+  for(let m=som(start);m<=end;m=new Date(m.getFullYear(),m.getMonth()+1,1)) add('m',m);
+  R.pct=R.n?R.sum/R.n:0; return R;
+}
+function totText(t,amt){ if(isNamaz(t)) return NF.format(amt)+' vakit'; if(isList(t)) return NF.format(amt)+' okuma'; if(isEsma(t)) return NF.format(amt)+' zikir'; if(isDk(t)) return fmtMin(amt/60); return NF.format(amt)+(t.unit==='adet'?'':' '+t.unit); }
+function barRow(label,f,meta){ return '<div class="yrow"><div class="top"><b>'+label+'</b><span class="rate">'+pctS(f)+'</span></div>'+(meta?'<div class="meta">'+meta+'</div>':'')+'<span class="t-bar" style="--p:'+Math.min(1,f).toFixed(3)+'"></span></div>'; }
+function viewDurum(){
+  const u=state.view||ME; if(!u) return '';
+  const now=sod(new Date()),ms=som(now),dim=now.getDate(),own=u===ME;
+  const cd=comp(u,'d',now).pct,cw=comp(u,'w',now).pct,cm=comp(u,'m',now).pct,cy=yearStats(u,now.getFullYear()).pct||0;
+  const st=sinceFor(u),start=st>ms?st:ms,R=rangeStats(u,start,now);
+  let h='<section class="hero"><p class="sum-who">'+esc(dname(u))+'</p><p class="sum-main" style="margin-top:2px">Genel durum</p><div class="stats" style="grid-template-columns:repeat(4,1fr)">'+
+    [['Bugün',cd],['Bu hafta',cw],['Bu ay',cm],[String(now.getFullYear()),cy]].map(x=>'<div class="stat"><b>'+pctS(x[1])+'</b><span>'+x[0]+'</span></div>').join('')+'</div></section>';
+  // namaz
+  const nt=tasksOf(u).find(t=>isNamaz(t));
+  if(nt){ const s2=R.tasks[nt.id]; const kd=docKey('d',now),bugun=Math.round(frac(nt,u,kd,now)*5),tot=s2?s2.amt:0,pos=s2?s2.n*5:0;
+    h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2">Namaz</h2><span class="small muted">bu ay</span></div><div class="stats"><div class="stat"><b>'+bugun+'/5</b><span>bugün</span></div><div class="stat"><b>'+NF.format(tot)+'</b><span>vakit kılındı</span></div><div class="stat"><b>'+pctS(pos?tot/pos:0)+'</b><span>vaktinde, sünnetle</span></div></div></section>'; }
+  // virdler
+  const zk=tasksOf(u).filter(t=>t.cat==='zikir'&&R.tasks[t.id]&&R.tasks[t.id].n);
+  if(zk.length) h+='<section class="group" style="--rc:var(--c-zikir);margin-top:14px"><div class="g-head"><h3 class="h2">Virdler ve zikirler</h3><span>bu ay</span></div>'+zk.map(t=>{ const x=R.tasks[t.id]; return barRow(esc(t.name),x.fs/x.n,x.done+' / '+x.n+' '+PUNIT[t.period]+' tamam, toplam '+esc(totText(t,x.amt))); }).join('')+'</section>';
+  // kategoriler
+  const cats=CATS.filter(([c])=>R.cats[c]&&R.cats[c].n);
+  if(cats.length) h+='<section class="group" style="margin-top:14px"><div class="g-head"><h3 class="h2">Alanlara göre</h3><span>bu ay</span></div>'+cats.map(([c,nm])=>'<div style="--rc:var(--c-'+c+')">'+barRow(esc(nm),R.cats[c].s/R.cats[c].n,'')+'</div>').join('')+'</section>';
+  // Kur'an
+  const qt=tasksOf(u).filter(t=>isQuranTask(t)); let pages=0; for(const t of qt){ const x=R.tasks[t.id]; if(x) pages+=x.amt; }
+  if(qt.length||own){ const lp=own&&lsGet('vird:mp')?mushafLast():0;
+    h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2">Kur\'an-ı Kerim</h2>'+(own?'<button class="btn" data-mushafgo>Oku</button>':'')+'</div><div class="stats">'+
+      '<div class="stat"><b>'+NF.format(pages)+'</b><span>sayfa, bu ay</span></div>'+(own?'<div class="stat"><b>'+(lp?lp+'.':'–')+'</b><span>kaldığın sayfa</span></div><div class="stat"><b>%'+(lp?Math.round((lp-1)/604*100):0)+'</b><span>hatim</span></div>':'')+'</div></section>'; }
+  // İlim
+  const il=((state.people[u]||{}).ilim)||{},all=ILIMLER.reduce((n,x)=>n+x.dersler.length,0),dn=ILIMLER.reduce((n,x)=>n+x.dersler.filter(d=>il[d.id]).length,0);
+  h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2">İlim</h2>'+(own?'<button class="btn" data-ilimgo>Derslere git</button>':'')+'</div><p class="small muted" style="margin:6px 0 10px">'+dn+' / '+all+' ders tamamlandı</p><div class="cats">'+ILIMLER.map(x=>{ const n=x.dersler.filter(d=>il[d.id]).length; return '<span class="chip" style="--rc:var(--c-'+x.cat+')">'+esc(x.ad)+' <span class="pc num">'+n+'/'+x.dersler.length+'</span></span>'; }).join('')+'</div></section>';
+  h+='<h2 class="sec" style="margin-top:26px">Yıllık</h2>'+viewYear();
+  return h;
+}
 function viewYear(){
   const u=state.view,y=state.year,cy=new Date().getFullYear();
   let h=navHTML(String(y),y===cy?'Bu yıl':'',y>=cy,y===cy?'':'Bu yıla dön');
@@ -1513,6 +1571,7 @@ function viewYear(){
 function cellText(t,u,k,d){
   const v=val(t,u,k);
   if(isEsma(t)){ let n=0; for(const i of esmaOfDay(d)) if(val(t,u,k,'esma_'+(i+1))>=ESMA[i][2])n++; return n+'/3'; }
+  if(isNamaz(t)){ return Math.round(frac(t,u,k,d)*5)+'/5'; }
   if(isList(t)){ const [n,m]=listDone(t,u,k,d); return n+'/'+m; }
   if(isBinary(t)) return v>=1?'1/1':'0/1';
   if(isDk(t)) return Math.floor(v/60)+'/'+t.target+' dk';
@@ -1569,7 +1628,7 @@ function render(){
   const v=$('view');
   const keepIn={}; v.querySelectorAll('input[id],select[id]').forEach(x=>{ keepIn[x.id]=x.type==='checkbox'?{c:x.checked}:{v:x.value}; });
   const fx=document.activeElement&&v.contains(document.activeElement)&&document.activeElement.id?{id:document.activeElement.id,ss:document.activeElement.selectionStart,se:document.activeElement.selectionEnd}:null;
-  v.innerHTML=state.tab==='ilim'?viewIlim():state.tab==='bugun'?viewToday():state.tab==='y'?viewYear():state.tab==='aile'?viewAile():viewPeriod();
+  v.innerHTML=state.tab==='ilim'?viewIlim():state.tab==='bugun'?viewToday():state.tab==='y'?viewDurum():state.tab==='aile'?viewAile():viewPeriod();
   const as=$('aileStar'); if(as) setStar(as,+as.dataset.p);
   for(const id in keepIn){ const x=document.getElementById(id); if(!x||!v.contains(x)) continue; if('c' in keepIn[id]) x.checked=keepIn[id].c; else if(keepIn[id].v!=null&&keepIn[id].v!=='') x.value=keepIn[id].v; }
   if(fx){ const x=document.getElementById(fx.id); if(x){ x.focus({preventScroll:true}); try{ if(fx.ss!=null) x.setSelectionRange(fx.ss,fx.se); }catch(e){} } }
@@ -2018,6 +2077,7 @@ $('view').addEventListener('click',e=>{
   if(a==='open') openCounter(t.id,li.dataset.ei);
   else if(a==='read') openReader(t.id);
   else if(a==='mushaf') openMushaf(t.id);
+  else if(a==='nmtog'){ const f='nm_'+b.dataset.nk,on=val(t,u,k,f)>=1; setVal(t,u,k,f,on?0:1); if(!on){ buzz(12); if(Math.round(frac(t,u,k,state.cursor)*5)>=5){ buzz([30,60,30]); toast('Bugünkü beş vakit tamam. Allah kabul etsin.'); } } render(); }
   else if(a==='toggle'){ setVal(t,u,k,t.id,val(t,u,k)>=1?0:1); render(); }
   else if(a==='inc'){ const v=Math.floor(val(t,u,k))+1; setVal(t,u,k,t.id,v); if(v>=tgt(t)) buzz([30,60,30]); render(); }
   else if(a==='dec'){ setVal(t,u,k,t.id,Math.floor(val(t,u,k))-1); render(); }
