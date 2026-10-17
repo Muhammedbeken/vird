@@ -457,7 +457,13 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .zcard.done .zc-ar{font-size:1.3rem}
 .rd-end{text-align:center;padding:10px 0 20px;font-family:var(--serif);font-size:1.2rem;color:var(--turq)}
 /* kıble */
-.kbtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 .7rem;font-size:.9rem}
+.kbtn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 .9rem 0 .6rem;font-size:1rem;font-weight:700}
+.kaic{width:28px;height:28px;flex:0 0 28px}
+:root{--kaline:transparent}
+[data-theme=dark]{--kaline:#8a8a8e}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--kaline:#8a8a8e}}
+.qh{display:flex;align-items:center;gap:8px}
+.qic{width:30px;height:30px;flex:0 0 30px}
 .vloc{margin:2px 0 0}
 .kb-box{position:relative;width:min(80vw,320px);aspect-ratio:1;margin:18px auto 6px}
 .kb-ptr{position:absolute;left:50%;top:-6px;width:4px;height:30px;margin-left:-2px;border-radius:2px;background:var(--cobalt);z-index:2}
@@ -468,7 +474,8 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .kb-n{fill:var(--danger);font:700 16px var(--sans);text-anchor:middle}
 .kb-c{fill:var(--ink-2);font:600 13px var(--sans);text-anchor:middle}
 .kb-mark{position:absolute;inset:0}
-.kb-kaaba{position:absolute;left:50%;top:8%;width:30px;height:30px;margin-left:-15px;border-radius:5px;background:#1b1b1b;box-shadow:inset 0 7px 0 #c9a14a,0 0 0 3px var(--surface)}
+.kb-kaaba{position:absolute;left:50%;top:6%;width:44px;height:44px;margin-left:-22px;display:block}
+.kb-kaaba svg{width:100%;height:100%;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .kible.aligned .kb-ring{stroke:var(--turq);stroke-width:6}
 .kible.aligned .kb-ptr{background:var(--turq)}
 .kb-tip{max-width:420px;font-size:.82rem}
@@ -477,13 +484,16 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .mushaf{z-index:46}
 .mp-meal-btn{margin-left:auto}
 .mp-meal-btn[aria-pressed="true"]{background:var(--cobalt-soft);color:var(--cobalt);border-color:var(--cobalt-soft)}
-.mp-page{font-family:"Amiri Quran",var(--ar);font-size:1.75rem;line-height:2.45;text-align:justify;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.mp-page{font-family:"Amiri Quran",var(--ar);font-size:calc(1.75rem * var(--mpz,1));line-height:2.45;text-align:justify;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
 .mp-ay{}
-.mp-n{color:var(--turq);font-size:1.05rem;white-space:nowrap}
+.mp-n{color:var(--turq);font-size:.6em;white-space:nowrap}
+#mpBody{touch-action:pan-y}
+.mp-ic .qic{width:32px;height:32px}
+.mp-zh{font-size:.8rem;color:var(--ink-2);text-align:center;margin:0 0 10px}
 .mp-sh{display:flex;justify-content:center;margin:8px 0 4px}
 .mp-sh span{font-family:var(--serif);font-size:1rem;direction:ltr;color:var(--cobalt);border:1.5px solid var(--gold);border-radius:999px;padding:3px 16px;background:var(--bg)}
 .mp-bes{text-align:center;margin:0 0 6px;font-size:1.5rem;color:var(--ink-2)}
-.mp-meal{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.mp-meal{font-size:calc(1rem * (1 + (var(--mpz,1) - 1) * .6));margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
 .mp-meal h3{font-family:var(--serif);margin:0 0 6px;font-size:1.05rem}
 .mp-tr{margin:8px 0;line-height:1.55}
 .mp-tr b{color:var(--cobalt)}
@@ -590,7 +600,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
   </div>
 </div>
 <div class="reader mushaf" id="mushaf" tabindex="-1" hidden role="dialog" aria-modal="true" aria-labelledby="mpTitle">
-  <div class="rd-top"><button class="btn ghost" data-mp="close">Kapat</button><div class="rd-tt"><h2 id="mpTitle">Kur'an-ı Kerim</h2><span id="mpSub"></span></div><button class="btn mp-meal-btn" id="mpMeal" data-mp="meal" aria-pressed="true">Meal</button></div>
+  <div class="rd-top"><button class="btn ghost" data-mp="close">Kapat</button><span class="mp-ic" aria-hidden="true"></span><div class="rd-tt"><h2 id="mpTitle">Kur'an-ı Kerim</h2><span id="mpSub"></span></div><button class="btn mp-meal-btn" id="mpMeal" data-mp="meal" aria-pressed="true">Meal</button></div>
   <div class="mp-jumpbox" id="mpJumpBox" hidden></div>
   <div class="rd-body" id="mpBody"></div>
   <div class="mp-bottom"><p class="mp-count" id="mpCount"></p><div class="mp-nav"><button class="btn" data-mp="next" id="mpNext" aria-label="Sonraki sayfa">‹</button><button class="btn" data-mp="jump">Git</button><button class="btn plus mp-read" data-mp="read" id="mpRead">Okudum, sonraki sayfa</button><button class="btn" data-mp="prev" id="mpPrev" aria-label="Önceki sayfa">›</button></div></div>
@@ -681,6 +691,8 @@ const MINI='<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STA
 const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 const KBICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>';
 const LOCKIC='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const QURANIC='<svg class="qic" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 9.5C13 7.2 8.6 6.6 4.5 7.6v12.6c4.1-1 8.5-.4 11.5 1.9 3-2.3 7.4-2.9 11.5-1.9V7.6C23.4 6.6 19 7.2 16 9.5z" fill="var(--cobalt)"/><path d="M16 9.5v12.6" stroke="var(--gold)" stroke-width="1.4"/><path d="M7 10.4c2.6-.4 5 .1 7 1.2M7 13.4c2.6-.4 5 .1 7 1.2M18 11.6c2-1.1 4.4-1.6 7-1.2M18 14.6c2-1.1 4.4-1.6 7-1.2" stroke="var(--gold)" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M7 22.5l18 6.5M25 22.5L7 29" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/></svg>';
+const KAABAIC='<svg class="kaic" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4.5l11 4.6v14.4L16 28.1 5 23.5V9.1z" fill="#1d1d1f" stroke="var(--kaline)" stroke-width="1.1" stroke-linejoin="round"/><path d="M5 9.1l11 4.6 11-4.6" fill="none" stroke="#3a3a3c" stroke-width="1.1"/><path d="M16 13.7v14.4" stroke="#3a3a3c" stroke-width="1.1"/><path d="M5 12.4l11 4.6 11-4.6v2.6l-11 4.6L5 15z" fill="#d4a843"/><path d="M19.5 18.9l3.3-1.4v5.6l-3.3 1.4z" fill="#d4a843"/></svg>';
 const SHICON='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>';
 const CHECKS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 function ringHTML(f,cat){ const rc='var(--c-'+(CATNAME[cat]?cat:'diger')+')';
@@ -1181,10 +1193,10 @@ function vkSourceNote(){
 function vakitHTML(d){
   if(!vkReady()) return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn" data-vk="ayar">Ayarla</button></div><p class="small muted" style="margin:6px 0 0">'+(VK.en?'İlini ve ilçeni seç; vakitleri görür, her vakitten önce bildirim alırsın.':'İlini ve ilçeni seç; vakitleri görür, istersen her vakitten önce bildirim alırsın.')+'</p></section>';
   const day=vkDay(d);
-  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KBICON+' Kıble</button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
+  if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KAABAIC+'<span>Kıble</span></button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
   ensureVakitler();
   const isToday=+sod(d)===+sod(new Date()),nx=isToday?nextVakit(day):null,cuma=d.getDay()===5;
-  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KBICON+' Kıble</button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><div class="vgrid">'+
+  return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KAABAIC+'<span>Kıble</span></button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><div class="vgrid">'+
     VAKIT.map(([k,nm])=>'<div class="v'+(nx&&!nx.tom&&nx.k===k?' next':'')+'"><span>'+(k==='ogle'&&cuma?'Cuma':nm)+'</span><b>'+esc(day[k]||'–')+'</b></div>').join('')+'</div>'+
     (nx?'<p class="vnext" id="vkNext">'+esc((nx.tom?'Yarın ':'')+(nx.k==='ogle'&&cuma?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left))+'</p>':'')+
     '<p class="fine">'+esc(vkSourceNote())+'</p></section>';
@@ -1419,12 +1431,6 @@ function viewToday(){
   h+=vakitHTML(d);
   h+=mushafCardHTML();
   h+=ilimCardHTML();
-  const ts=tasksOf(u).filter(t=>t.period==='d'),keepK='t|'+k+'|'+u;
-  if(state.keepKey!==keepK){ state.keepKey=keepK; state.keep=new Set(ts.filter(t=>frac(t,u,k,d)<0.9999).map(t=>t.id)); }
-  const left=ts.filter(t=>frac(t,u,k,d)<0.9999||state.keep.has(t.id));
-  h+='<div class="toolbar"><h2 class="h2">Sıradaki işler</h2><button class="linkbtn" data-goper="d">Tüm görevler</button></div>';
-  if(left.some(t=>frac(t,u,k,d)<0.9999)) h+='<section class="group"><ul class="tasks">'+left.map(t=>isNamaz(t)?namazHTML(t,u,k,false):isEsma(t)?esmaHTML(t,u,k,false):rowHTML(t,u,k)).join('')+'</ul></section>';
-  else h+='<section class="card"><p class="empty">Bugünün görevleri tamam. Allah kabul etsin.</p></section>';
   const lw=cw.total-cw.done,lm=cm.total-cm.done;
   if(lw||lm) h+='<section class="card card-pad more">'+(lw?'<button class="mrow2" data-goper="w"><span>Bu haftadan <b>'+lw+'</b> görev kaldı</span><i>›</i></button>':'')+(lm?'<button class="mrow2" data-goper="m"><span>Bu aydan <b>'+lm+'</b> görev kaldı</span><i>›</i></button>':'')+'</section>';
   if(GID&&state.members.length>1){ const G=state.groups[GID];
@@ -1525,7 +1531,7 @@ function viewDurum(){
   // Kur'an
   const qt=tasksOf(u).filter(t=>isQuranTask(t)); let pages=0; for(const t of qt){ const x=R.tasks[t.id]; if(x) pages+=x.amt; }
   if(qt.length||own){ const lp=own&&lsGet('vird:mp')?mushafLast():0;
-    h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2">Kur\'an-ı Kerim</h2>'+(own?'<button class="btn" data-mushafgo>Oku</button>':'')+'</div><div class="stats">'+
+    h+='<section class="card card-pad" style="margin-top:14px"><div class="vh"><h2 class="h2 qh">'+QURANIC+'Kur\'an-ı Kerim</h2>'+(own?'<button class="btn" data-mushafgo>Oku</button>':'')+'</div><div class="stats">'+
       '<div class="stat"><b>'+NF.format(pages)+'</b><span>sayfa, bu ay</span></div>'+(own?'<div class="stat"><b>'+(lp?lp+'.':'–')+'</b><span>kaldığın sayfa</span></div><div class="stat"><b>%'+(lp?Math.round((lp-1)/604*100):0)+'</b><span>hatim</span></div>':'')+'</div></section>'; }
   // İlim
   const il=((state.people[u]||{}).ilim)||{},all=ILIMLER.reduce((n,x)=>n+x.dersler.length,0),dn=ILIMLER.reduce((n,x)=>n+x.dersler.filter(d=>il[d.id]).length,0);
@@ -1755,9 +1761,11 @@ function mushafLast(){ return Math.max(1,Math.min(604,+lsGet('vird:mp')||1)); }
 function mushafCardHTML(){
   const ts=tasksOf(ME).filter(t=>t.period==='d'&&isQuranTask(t)); if(!ts.length&&!lsGet('vird:mp')) return '';
   const p=mushafLast(),pct=Math.round((p-1)/604*100);
-  return '<section class="card card-pad mcard2"><div class="vh"><h2 class="h2">Kur\'an-ı Kerim</h2><button class="btn plus" data-mushafgo>'+(lsGet('vird:mp')?'Devam et':'Okumaya başla')+'</button></div><p class="small muted" style="margin:6px 0 8px">'+(lsGet('vird:mp')?'Kaldığın yer: '+p+'. sayfa. Hatimde %'+pct:'Arapça metin ve Diyanet meali; okudukça sayfa görevine kendiliğinden eklenir.')+'</p><span class="mbar" style="--p:'+(pct/100).toFixed(3)+'"></span></section>';
+  return '<section class="card card-pad mcard2"><div class="vh"><h2 class="h2 qh">'+QURANIC+'Kur\'an-ı Kerim</h2><button class="btn plus" data-mushafgo>'+(lsGet('vird:mp')?'Devam et':'Okumaya başla')+'</button></div><p class="small muted" style="margin:6px 0 8px">'+(lsGet('vird:mp')?'Kaldığın yer: '+p+'. sayfa. Hatimde %'+pct:'Arapça metin ve Diyanet meali; okudukça sayfa görevine kendiliğinden eklenir.')+'</p><span class="mbar" style="--p:'+(pct/100).toFixed(3)+'"></span></section>';
 }
 async function openMushaf(tid){
+  const mi=document.querySelector('#mushaf .mp-ic'); if(mi&&!mi.firstChild) mi.innerHTML=QURANIC;
+  mpZoomApply();
   const all=tasksOf(ME); let t=tid?all.find(x=>x.id===tid):null;
   if(!t) t=all.find(x=>x.id==='kuran')||all.find(x=>x.period==='d'&&isQuranTask(x))||null;
   mp.tid=t?t.id:null; mp.on=true; mp.page=+lsGet('vird:mp'+(mp.tid?':'+mp.tid:''))||mushafLast(); mp.meal=lsGet('vird:mpmeal')!=='0';
@@ -1767,6 +1775,16 @@ async function openMushaf(tid){
   catch(e){ console.warn(e); $('mpBody').innerHTML='<div style="padding:30px 10px;text-align:center"><p class="err">Kur\'an metni indirilemedi. İlk açılışta internet gerekir (yaklaşık 3 MB, bir kez).</p><button class="btn plus" data-mp="retry">Tekrar dene</button></div>'; return; }
   renderMushaf(true);
 }
+let mpZ=Math.max(0.8,Math.min(2.4,+lsGet('vird:mpz')||1)),pz=null;
+function mpZoomApply(){ const b=$('mpBody'); if(b) b.style.setProperty('--mpz',mpZ.toFixed(3)); }
+(function(){
+  const b=$('mpBody'); if(!b) return;
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  b.addEventListener('touchstart',e=>{ if(e.touches.length===2){ const r=b.getBoundingClientRect(),cy=(e.touches[0].clientY+e.touches[1].clientY)/2-r.top; pz={d:dist(e.touches),z:mpZ,top:b.scrollTop,cy}; } },{passive:true});
+  b.addEventListener('touchmove',e=>{ if(!pz||e.touches.length!==2) return; e.preventDefault(); const z=Math.max(0.8,Math.min(2.4,pz.z*dist(e.touches)/pz.d)); if(Math.abs(z-mpZ)<0.01) return; mpZ=z; mpZoomApply(); b.scrollTop=(pz.top+pz.cy)*(z/pz.z)-pz.cy; },{passive:false});
+  const end=e=>{ if(pz&&e.touches.length<2){ pz=null; lsSet('vird:mpz',mpZ.toFixed(3)); } };
+  b.addEventListener('touchend',end,{passive:true}); b.addEventListener('touchcancel',end,{passive:true});
+})();
 function closeMushaf(){ mp.on=false; $('mushaf').hidden=true; document.body.style.overflow=''; render(); }
 function mpTask(){ return mp.tid?tasksOf(ME).find(x=>x.id===mp.tid):null; }
 function renderMushaf(top){
@@ -1782,7 +1800,7 @@ function renderMushaf(top){
   }
   const t=mpTask(),k=docKey('d',sod(new Date())),v=t?Math.floor(val(t,ME,k)):0;
   const doneKey='vird:mpd:'+iso(new Date())+':'+(mp.tid||''),doneSet=new Set(String(lsGet(doneKey)||'').split(',').filter(Boolean));
-  $('mpBody').innerHTML='<div class="mp-page" dir="rtl" lang="ar">'+ar+'</div>'+(mp.meal?'<div class="mp-meal"><h3>Meal</h3>'+tr+'<p class="zc-src">Meal: '+(MUSHAF.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'. Arapça metin: Tanzil Projesi.</p></div>':'');
+  $('mpBody').innerHTML=(lsGet('vird:mpz')?'':'<p class="mp-zh">Yazıyı büyütmek için iki parmağınla yakınlaştır.</p>')+'<div class="mp-page" dir="rtl" lang="ar">'+ar+'</div>'+(mp.meal?'<div class="mp-meal"><h3>Meal</h3>'+tr+'<p class="zc-src">Meal: '+(MUSHAF.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'. Arapça metin: Tanzil Projesi.</p></div>':'');
   $('mpCount').textContent=t?(t.name+': bugün '+v+' / '+t.target+' sayfa'+(doneSet.has(String(mp.page))?', bu sayfa sayıldı':'')):'Sayfa görevin yok; okuman sayılmaz.';
   $('mpRead').disabled=false; $('mpRead').textContent=doneSet.has(String(mp.page))?'Sonraki sayfa':'Okudum, sonraki sayfa';
   $('mpPrev').disabled=mp.page<=1; $('mpNext').disabled=mp.page>=604;
@@ -1911,6 +1929,7 @@ function kbDraw(){
 async function openKible(){
   const tk=document.querySelector('#kible .kb-ticks'); if(tk&&!tk.childNodes.length){ let g=''; for(let i=0;i<72;i++){ const a2=i*5*Math.PI/180,l=i%18===0?12:i%2===0?7:4,r1=92,r2=92-l; g+='<line x1="'+(100+r1*Math.sin(a2)).toFixed(1)+'" y1="'+(100-r1*Math.cos(a2)).toFixed(1)+'" x2="'+(100+r2*Math.sin(a2)).toFixed(1)+'" y2="'+(100-r2*Math.cos(a2)).toFixed(1)+'"/>'; } tk.innerHTML=g; }
   $('kible').hidden=false; document.body.style.overflow='hidden'; kb.on=true; kb.sm=null; kb.got=false; kb.aligned=false; kb.q=null;
+  const km=document.querySelector('#kbMark .kb-kaaba'); if(km&&!km.firstChild) km.innerHTML=KAABAIC;
   $('kbLoc').textContent=VK.il?vkLabel():''; $('kbInfo').textContent=''; $('kbMsg').textContent='';
   $('kbNeed').hidden=!!VK.il; $('kbWrap').hidden=!VK.il;
   if(!VK.il) return;
