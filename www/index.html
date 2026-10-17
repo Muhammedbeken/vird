@@ -419,6 +419,8 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .chk.lead svg{width:20px;height:20px}
 .chk.lead.on{background:var(--rc,var(--turq));border-color:var(--rc,var(--turq));color:var(--surface)}
 .task.bin .t-main{cursor:pointer}
+.dot{box-shadow:0 0 0 1.5px var(--line)}
+.task,.chip,.btn,.tabbar,.stat,.srow,.mrow2,.h-col{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .hero .star{width:96px}
 .hero .sum{grid-template-columns:96px 1fr;gap:14px}
 .hero .sum-main{font-size:1.18rem;line-height:1.2}
@@ -675,7 +677,8 @@ const savePrefs=()=>{try{localStorage.setItem('vird:prefs',JSON.stringify({tab:s
 const saveTimer=()=>{try{ timer?localStorage.setItem('vird:timer',JSON.stringify(timer)):localStorage.removeItem('vird:timer'); }catch(e){}};
 const APP=(function(){ let x=null; try{ x=JSON.parse(localStorage.getItem('vird:app')||'null'); }catch(e){} x=Object.assign({fs:1,theme:'auto'},x||{}); if(![0.9,1,1.12,1.25].includes(+x.fs)) x.fs=1; if(!['auto','light','dark'].includes(x.theme)) x.theme='auto'; return x; })();
 const appSave=()=>{ try{ localStorage.setItem('vird:app',JSON.stringify(APP)); }catch(e){} };
-function applyApp(){ const r=document.documentElement; r.style.setProperty('--fs',String(APP.fs)); if(APP.theme==='auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme',APP.theme); }
+function applyApp(){ const r=document.documentElement; r.style.setProperty('--fs',String(APP.fs)); if(APP.theme==='auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme',APP.theme);
+  try{ const SB=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SystemBars; if(SB&&SB.setStyle) SB.setStyle({style:APP.theme==='dark'?'DARK':APP.theme==='light'?'LIGHT':'DEFAULT'}).catch(()=>{}); }catch(e){} }
 applyApp();
 const period=()=>PNAME[state.tab]?state.tab:'d';
 if(!state.per) state.per='d';
@@ -1181,10 +1184,21 @@ function dailyHTML(d,compact){
     '<section class="card card-pad daily"><div class="vh"><h2 class="h2">Günün hadisi</h2><button class="btn shr" data-share="hadis" aria-label="Günün hadisini paylaş">'+SHICON+' Paylaş</button></div><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></section>';
 }
 
+function onBack(){
+  if(mp.on){ if(!$('mpJumpBox').hidden){ $('mpJumpBox').hidden=true; return; } closeMushaf(); return; }
+  if(kb.on){ closeKible(); return; }
+  if(rd){ closeReader(); return; }
+  if(cs){ closeCounter(); return; }
+  if(ted){ closeTaskEditor(); return; }
+  if(!$('sheet').hidden){ if(draft&&draft.sec){ draft.sec=''; renderSheet(); return; } closeSettings(); return; }
+  if(state.editMode){ state.editMode=false; render(); return; }
+  if(state.joined&&state.tab!=='bugun'){ state.tab='bugun'; state.cursor=sod(new Date()); state.view=ME; savePrefs(); render(); window.scrollTo(0,0); enterAnim(); return; }
+  const A=Plug('App'); if(A&&A.minimizeApp) A.minimizeApp().catch(()=>{ if(A.exitApp) A.exitApp(); }); else if(A&&A.exitApp) A.exitApp();
+}
 async function init(){
   store.mode='db'; state.canWrite=true; state.canAdmin=true; state.isOwner=true; state.me=ME||null;
   const A=Plug('App');
-  if(A){ try{ A.addListener('appUrlOpen',ev=>{ const t=tokenOf(ev&&ev.url); if(t) handleToken(t); }); }catch(e){} try{ const l=await A.getLaunchUrl(); if(l&&l.url) gate.pendingInvite=tokenOf(l.url); }catch(e){} }
+  if(A){ try{ A.addListener('backButton',onBack); }catch(e){} try{ A.addListener('appUrlOpen',ev=>{ const t=tokenOf(ev&&ev.url); if(t) handleToken(t); }); }catch(e){} try{ const l=await A.getLaunchUrl(); if(l&&l.url) gate.pendingInvite=tokenOf(l.url); }catch(e){} }
   render();
   if(!window.firebase||!CFG.apiKey){ gate={mode:'config'}; render(); return; }
   try{
@@ -1503,6 +1517,8 @@ function viewAile(){
   return h+newGroupForm(false);
 }
 function render(){
+  if((cs||rd||(typeof mp!=='undefined'&&mp.on)||(typeof kb!=='undefined'&&kb.on))&&state.joined){ if(cs) renderCounter(); state.dirty=true; return; }
+  state.dirty=false;
   for(const k in yCache) delete yCache[k];
   const fe=document.activeElement; let fsel=null;
   if(fe&&fe!==document.body&&$('view').contains(fe)){ const li=fe.closest('li.task'); if(li) fsel='li.task[data-id="'+li.dataset.id+'"]'+(li.dataset.ei?'[data-ei="'+li.dataset.ei+'"]':'')+' '+(fe.dataset.act?'[data-act="'+fe.dataset.act+'"]':'button'); else if(fe.dataset.filter) fsel='[data-filter="'+fe.dataset.filter+'"]'; else if(fe.dataset.nav) fsel='[data-nav="'+fe.dataset.nav+'"]'; else if(fe.dataset.ap) fsel='[data-ap="'+fe.dataset.ap+'"]'; }
@@ -1741,7 +1757,7 @@ async function openKible(){
   clearTimeout(kb.timer); kb.timer=setTimeout(()=>{ if(kb.on&&!kb.got) $('kbMsg').textContent='Telefonunda pusula bulunamadı. Kıble, kuzeyden saat yönünde '+Math.round(kb.q)+'° yönündedir; bir pusula ya da güneşin yönüyle bulabilirsin.'; },2500);
 }
 function kbDiag(){ const el=$('kbDiag'); if(!el||!kb.on) return; el.textContent='Sensör: '+kb.src+', okuma: '+kb.n+(kb.err?', hata: '+kb.err:'')+', sürüm 1.0.'+(BUILD||0); setTimeout(kbDiag,1000); }
-function closeKible(){ kb.on=false; clearTimeout(kb.timer); try{ if(kb.lh){ kb.lh.remove(); kb.lh=null; } const CP=compassPlugin(); if(CP) CP.stop().catch(()=>{}); }catch(e){} window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
+function closeKible(){ kb.on=false; clearTimeout(kb.timer); setTimeout(render,0); try{ if(kb.lh){ kb.lh.remove(); kb.lh=null; } const CP=compassPlugin(); if(CP) CP.stop().catch(()=>{}); }catch(e){} window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
 $('kbClose').addEventListener('click',closeKible);
 $('kbSet').addEventListener('click',()=>{ closeKible(); openSettings('vakit'); });
 
