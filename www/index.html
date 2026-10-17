@@ -1129,8 +1129,8 @@ function dailyHTML(d,compact){
   const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length];
   const src='<p class="d-src">'+(A&&A.tr?(A.ed==='tr.vakfi'?'Meal: Türkiye Diyanet Vakfı':'Meal: Diyanet İşleri Başkanlığı'):'')+'</p>';
   const peek=x=>{ x=String(x||''); return x.length>70?x.slice(0,70).replace(/\s+\S*$/,'')+'…':x; };
-  return '<details class="card card-pad daily dt" id="dAyet"'+(state.openAyet?' open':'')+'><summary><h2 class="h2">Günün âyeti</h2><span class="peek">'+esc(A&&A.tr?peek(A.tr):'')+'</span></summary>'+a+src+'</details>'+
-    '<details class="card card-pad daily dt" id="dHadis"'+(state.openHadis?' open':'')+'><summary><h2 class="h2">Günün hadisi</h2><span class="peek">'+esc(peek(H[0]))+'</span></summary><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></details>';
+  return '<section class="card card-pad daily"><h2 class="h2">Günün âyeti</h2>'+a+src+'</section>'+
+    '<section class="card card-pad daily"><h2 class="h2">Günün hadisi</h2><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></section>';
 }
 
 async function init(){
@@ -1546,7 +1546,9 @@ async function kibleKoord(){
   const m=j&&j.data&&j.data.meta; if(!m||m.latitude==null) throw new Error('konum bulunamadı');
   c={key,lat:+m.latitude,lng:+m.longitude}; lsSet('vird:kc',JSON.stringify(c)); return c;
 }
-const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null};
+const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null,lh:null,acc:3};
+let CompassP=null; function compassPlugin(){ if(CompassP!==null) return CompassP; const C=window.Capacitor; CompassP=(C&&C.isNativePlatform&&C.isNativePlatform()&&C.registerPlugin)?C.registerPlugin('Compass'):false; return CompassP; }
+function kbHeading(h,acc){ if(!kb.on||h==null||isNaN(h)) return; kb.got=true; if(acc!=null) kb.acc=acc; if(kb.sm==null) kb.sm=h; else { const d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.3+360)%360; } kbDraw(); }
 const compassDir=a=>['kuzey','kuzey-kuzeydoğu','kuzeydoğu','doğu-kuzeydoğu','doğu','doğu-güneydoğu','güneydoğu','güney-güneydoğu','güney','güney-güneybatı','güneybatı','batı-güneybatı','batı','batı-kuzeybatı','kuzeybatı','kuzey-kuzeybatı'][Math.round(((a%360)+360)%360/22.5)%16];
 function kbOrient(e){
   let h=null;
@@ -1554,9 +1556,7 @@ function kbOrient(e){
   else if(e.absolute&&e.alpha!=null) h=360-e.alpha;
   if(h==null) return;
   const so=(screen.orientation&&screen.orientation.angle)||0; h=(h+so+360)%360;
-  kb.got=true;
-  if(kb.sm==null) kb.sm=h; else { let d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.25+360)%360; }
-  kbDraw();
+  kbHeading(h,null);
 }
 function kbDraw(){
   const dial=$('kbDial'),msg=$('kbMsg'); if(!dial) return;
@@ -1566,7 +1566,7 @@ function kbDraw(){
   const diff=Math.abs(((kb.q-kb.sm+540)%360)-180),al=diff<=4;
   $('kible').classList.toggle('aligned',al);
   if(al&&!kb.aligned) buzz(40); kb.aligned=al;
-  msg.textContent=al?'Kıble yönündesin.':'Telefonu düz tut ve Kâbe işareti üstteki çizgiye gelene kadar dön.';
+  msg.textContent=al?'Kıble yönündesin.':(kb.acc<2?'Pusula hassasiyeti düşük: telefonu havada birkaç kez 8 çizerek ayarla.':'Telefonu düz tut ve Kâbe işareti üstteki çizgiye gelene kadar dön.');
 }
 async function openKible(){
   const tk=document.querySelector('#kible .kb-ticks'); if(tk&&!tk.childNodes.length){ let g=''; for(let i=0;i<72;i++){ const a2=i*5*Math.PI/180,l=i%18===0?12:i%2===0?7:4,r1=92,r2=92-l; g+='<line x1="'+(100+r1*Math.sin(a2)).toFixed(1)+'" y1="'+(100-r1*Math.cos(a2)).toFixed(1)+'" x2="'+(100+r2*Math.sin(a2)).toFixed(1)+'" y2="'+(100-r2*Math.cos(a2)).toFixed(1)+'"/>'; } tk.innerHTML=g; }
@@ -1580,10 +1580,13 @@ async function openKible(){
     $('kbInfo').textContent='Kıble açısı: kuzeyden saat yönünde '+Math.round(kb.q)+'° ('+compassDir(kb.q)+')';
     $('kbMsg').textContent='Pusula bekleniyor…'; kbDraw();
   }catch(e){ console.warn(e); $('kbMsg').textContent='Kıble yönü için bir kez internet gerekiyor. Bağlantını kontrol edip tekrar aç.'; return; }
-  window.addEventListener('deviceorientationabsolute',kbOrient,true); window.addEventListener('deviceorientation',kbOrient,true);
+  let native=false; const CP=compassPlugin();
+  if(CP){ try{ const c2=await kibleKoord(); const r=await CP.start({lat:c2.lat,lng:c2.lng}); if(r&&r.available){ native=true; kb.lh=await CP.addListener('heading',d=>kbHeading(+d.heading,d.accuracy)); } }catch(e){ console.warn('pusula',e); } }
+  if(!kb.on){ if(native) closeKible(); return; }
+  if(!native){ window.addEventListener('deviceorientationabsolute',kbOrient,true); window.addEventListener('deviceorientation',kbOrient,true); }
   clearTimeout(kb.timer); kb.timer=setTimeout(()=>{ if(kb.on&&!kb.got) $('kbMsg').textContent='Telefonunda pusula bulunamadı. Kıble, kuzeyden saat yönünde '+Math.round(kb.q)+'° yönündedir; bir pusula ya da güneşin yönüyle bulabilirsin.'; },2500);
 }
-function closeKible(){ kb.on=false; clearTimeout(kb.timer); window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
+function closeKible(){ kb.on=false; clearTimeout(kb.timer); try{ if(kb.lh){ kb.lh.remove(); kb.lh=null; } const CP=compassPlugin(); if(CP) CP.stop().catch(()=>{}); }catch(e){} window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
 $('kbClose').addEventListener('click',closeKible);
 $('kbSet').addEventListener('click',()=>{ closeKible(); openSettings('vakit'); });
 

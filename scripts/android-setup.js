@@ -37,6 +37,13 @@ if (!man.includes('android:scheme="vird"')) {
   fs.writeFileSync(manPath, man);
 }
 
+// 2c) Yerel pusula eklentisi (kıble) ve onu kaydeden MainActivity
+const javaDir = path.join(app, 'src', 'main', 'java', 'com', 'vird', 'aile');
+fs.mkdirSync(javaDir, { recursive: true });
+for (const f of fs.readdirSync(path.join(root, 'native', 'android'))) {
+  if (f.endsWith('.java')) fs.copyFileSync(path.join(root, 'native', 'android', f), path.join(javaDir, f));
+}
+
 // 3) İmza ve sürüm numarası
 const run = parseInt(process.env.GITHUB_RUN_NUMBER || '1', 10);
 const gPath = path.join(app, 'build.gradle');
