@@ -500,6 +500,9 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .shr{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 .7rem;font-size:.88rem}
 /* İlim */
 .ders{z-index:46}
+.task.locked{opacity:.6}
+.task.locked .t-main{cursor:default}
+.lockic{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;color:var(--ink-2)}
 .ilim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .ilim-c{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--rc);border-radius:14px;padding:12px;font:inherit;color:inherit;cursor:pointer;min-height:132px}
 .ilim-top{display:flex;align-items:center;gap:8px}
@@ -677,6 +680,7 @@ const STAR=(function(){const R=47,r=R*0.7654,p=[];for(let i=0;i<16;i++){const a=
 const MINI='<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STAR+'"/></svg>';
 const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 const KBICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>';
+const LOCKIC='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 const SHICON='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>';
 const CHECKS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 function ringHTML(f,cat){ const rc='var(--c-'+(CATNAME[cat]?cat:'diger')+')';
@@ -1641,7 +1645,8 @@ function render(){
 const DERS={},DERS_IL={}; for(const il of ILIMLER) for(const d of il.dersler){ DERS[d.id]=d; DERS_IL[d.id]=il; }
 const ILIM_GOREV={arapca:'arapca',tefsir:'tefsir',hadis:'hadis'};
 const dersDone=id=>!!(((state.people[ME]||{}).ilim||{})[id]);
-function nextDers(){ for(const sev of ['Başlangıç','Orta']) for(const il of ILIMLER) for(const d of il.dersler) if(d.sev===sev&&!dersDone(d.id)) return d; return null; }
+const dersOpen=id=>{ const il=DERS_IL[id]; if(!il) return false; const i=il.dersler.findIndex(d=>d.id===id); return i<=0||dersDone(id)||dersDone(il.dersler[i-1].id); };
+function nextDers(){ const mx=Math.max(...ILIMLER.map(il=>il.dersler.length)); for(let i=0;i<mx;i++) for(const il of ILIMLER){ const d=il.dersler[i]; if(d&&!dersDone(d.id)&&dersOpen(d.id)) return d; } return null; }
 function ilimCardHTML(){
   const nd=nextDers(); if(!nd) return '';
   const il=DERS_IL[nd.id];
@@ -1653,12 +1658,12 @@ function viewIlim(){
   if(state.ilimSel){
     const il=ILIMLER.find(x=>x.id===state.ilimSel); if(!il){ state.ilimSel=null; return viewIlim(); }
     let h='<button class="back" data-ilim="">‹ İlimler</button><section class="hero"><p class="sum-who">İlim</p><p class="sum-main" style="margin-top:2px">'+esc(il.ad)+'</p><p class="sum-sub">'+esc(il.kisa)+'</p></section>';
-    for(const sev of ['Başlangıç','Orta']){
-      const ds=il.dersler.filter(d=>d.sev===sev); if(!ds.length) continue;
-      h+='<section class="group" style="--rc:var(--c-'+il.cat+');margin-top:14px"><div class="g-head"><h3 class="h2">'+sev+'</h3><span>'+ds.filter(d=>dersDone(d.id)).length+' / '+ds.length+'</span></div><ul class="tasks">'+
-        ds.map(d=>'<li class="task'+(dersDone(d.id)?' done':'')+'">'+ringHTML(dersDone(d.id)?1:0,il.cat)+'<button class="t-main" data-ders="'+d.id+'"><span class="t-name">'+esc(d.t)+'</span><span class="t-val">'+d.dk+' dk okuma, '+d.test.length+' soru'+(dersDone(d.id)?', tamamlandı':'')+'</span></button><div class="t-ctl"><button class="btn'+(dersDone(d.id)?'':' plus')+'" data-ders="'+d.id+'">'+(dersDone(d.id)?'Tekrar':'Başla')+'</button></div></li>').join('')+'</ul></section>';
-    }
-    h+='<p class="ed-note" style="margin:14px 2px 0">Bilgileri derinleştirmek ve sorularına cevap almak için bir hocaya danışmanı tavsiye ederiz.</p>';
+    h+='<section class="group" style="--rc:var(--c-'+il.cat+');margin-top:14px"><div class="g-head"><h3 class="h2">Dersler</h3><span>'+il.dersler.filter(d=>dersDone(d.id)).length+' / '+il.dersler.length+'</span></div><ul class="tasks">'+
+      il.dersler.map((d,i)=>{ const dn=dersDone(d.id),op=dersOpen(d.id);
+        return '<li class="task'+(dn?' done':'')+(op?'':' locked')+'">'+(op?ringHTML(dn?1:0,il.cat):'<span class="lockic" aria-hidden="true">'+LOCKIC+'</span>')+
+          '<button class="t-main" data-ders="'+d.id+'"'+(op?'':' aria-disabled="true"')+'><span class="t-name">'+(i+1)+'. '+esc(d.t)+'</span><span class="t-val">'+(op?esc(d.sev)+', '+d.dk+' dk, '+d.test.length+' soru'+(dn?', tamamlandı':''):'Önceki dersi bitirince açılır')+'</span></button>'+
+          '<div class="t-ctl">'+(op?'<button class="btn'+(dn?'':' plus')+'" data-ders="'+d.id+'">'+(dn?'Tekrar':'Başla')+'</button>':'')+'</div></li>'; }).join('')+'</ul></section>';
+    h+='<p class="ed-note" style="margin:14px 2px 0">Dersler sırayla açılır; bir ders bitince sonraki açılır. Bilgileri derinleştirmek ve sorularına cevap almak için bir hocaya danışmanı tavsiye ederiz.</p>';
     return h;
   }
   const nd=nextDers();
@@ -1668,7 +1673,7 @@ function viewIlim(){
   return h;
 }
 const dz={on:false,id:null,ans:{}};
-function openDers(id){ const d=DERS[id]; if(!d) return; dz.on=true; dz.id=id; dz.ans={}; $('ders').hidden=false; document.body.style.overflow='hidden'; renderDers(); $('dzBody').scrollTop=0; $('ders').focus({preventScroll:true}); }
+function openDers(id){ const d=DERS[id]; if(!d) return; if(!dersOpen(id)){ toast('Bu ders, önceki ders bitince açılır.'); return; } dz.on=true; dz.id=id; dz.ans={}; $('ders').hidden=false; document.body.style.overflow='hidden'; renderDers(); $('dzBody').scrollTop=0; $('ders').focus({preventScroll:true}); }
 function closeDers(){ dz.on=false; $('ders').hidden=true; document.body.style.overflow=''; render(); }
 function dzBlock(b){
   if(b.p) return '<p class="dz-p">'+esc(b.p)+'</p>';
