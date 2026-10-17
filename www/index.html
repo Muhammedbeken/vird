@@ -1247,7 +1247,7 @@ async function loadAyet(d){
 function dailyHTML(d,compact){
   const key=iso(d),A=ayetSt[key]; if(!A) loadAyet(d);
   let a;
-  if(A&&A.tr) a='<p class="d-ar" lang="ar" dir="rtl">'+esc(A.ar)+'</p><p class="d-tr">'+esc(A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
+  if(A&&A.tr) a='<p class="d-ar" lang="ar" dir="rtl">'+esc(trM(A.ar))+'</p><p class="d-tr">'+esc(A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
   else if(A==='err') a='<p class="d-tr muted">Âyet yüklenemedi. İnternet bağlantısı gelince tekrar denenecek.</p>';
   else a='<p class="d-tr muted">Yükleniyor…</p>';
   if(A==='err'&&!ayetSt['_t'+key]){ ayetSt['_t'+key]=1; setTimeout(()=>{ delete ayetSt[key]; delete ayetSt['_t'+key]; },60000); }
@@ -1724,7 +1724,7 @@ function dzBlock(b){
       '<div class="dz-es-act"><span class="small muted">Ebced sayısı: '+NF.format(e[2])+'</span><button class="btn'+(dn?'':' plus')+'" data-zk="'+i+'"'+(dn?' disabled':'')+'>'+(dn?CHECK+' Tamam':'Zikret '+NF.format(c)+' / '+NF.format(e[2]))+'</button></div></div>'; }).join('');
   if(b.ar) return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(b.ar)+'</p><p class="zc-ok">'+esc(b.ok)+'</p><p class="zc-tr">'+esc(b.tr)+'</p><p class="zc-src">Kaynak: '+esc(b.src)+'</p></div>';
   if(b.q){ const c=qCached(b.q),qk=b.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(b.q),0); return '<div class="dz-ar"><p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi; internet gelince tekrar denenecek.':'Âyet metni yükleniyor…')+'</p><p class="zc-src">'+esc(b.src)+'</p></div>'; }
-    return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(c.ar)+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">'+esc(b.src)+'. Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p></div>'; }
+    return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(trM(c.ar))+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">'+esc(b.src)+'. Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p></div>'; }
   return '';
 }
 function renderDers(){
@@ -1762,7 +1762,7 @@ async function shareText(text,title){
 }
 function shareDaily(kind){
   const d=sod(new Date());
-  if(kind==='ayet'){ const A=ayetSt[iso(d)]; if(!A||!A.tr) return; shareText(A.ar+'\n\n'+A.tr+'\n('+(SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet)','Günün âyeti'); }
+  if(kind==='ayet'){ const A=ayetSt[iso(d)]; if(!A||!A.tr) return; shareText(trM(A.ar)+'\n\n'+A.tr+'\n('+(SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet)','Günün âyeti'); }
   else { const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length]; shareText(H[0]+'\n('+H[1]+')','Günün hadisi'); }
 }
 
@@ -1831,8 +1831,8 @@ function renderMushaf(top){
   $('mpMeal').setAttribute('aria-pressed',String(mp.meal));
   let ar='',tr='';
   for(const a of P){
-    if(a[1]===1){ ar+='<div class="mp-sh"><span>'+esc(SURELER[a[0]-1])+' sûresi</span></div>'+(a[5]?'<p class="mp-bes" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>':''); }
-    ar+='<span class="mp-ay" lang="ar" dir="rtl">'+esc(a[2])+' <span class="mp-n">﴿'+arNum(a[1])+'﴾</span></span> ';
+    if(a[1]===1){ ar+='<div class="mp-sh"><span>'+esc(SURELER[a[0]-1])+' sûresi</span></div>'+(a[5]?'<p class="mp-bes" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>':''); }
+    ar+='<span class="mp-ay" lang="ar" dir="rtl">'+esc(trM(a[2]))+' <span class="mp-n">﴿'+arNum(a[1])+'﴾</span></span> ';
     tr+='<p class="mp-tr"><b>'+(a[1]===1||a===P[0]?esc(SURELER[a[0]-1])+' ':'')+a[1]+'.</b> '+esc(a[3])+'</p>';
   }
   const t=mpTask(),k=docKey('d',sod(new Date())),v=t?Math.floor(val(t,ME,k)):0;
@@ -1875,6 +1875,8 @@ $('mushaf').addEventListener('change',e=>{
 
 /* okuma ekranı: sabah/akşam zikirleri ve dualar */
 const qMem={};
+/* Türkiye mushaf yazım usulü: vasla işareti gösterilmez, kelime başındaki (و ف ب ل önekinden sonra da) elifin üzerinde hemze işareti yazılmaz, cezm yuvarlak yazılır. Harfler ve harekeler aynen korunur. */
+const trM=x=>String(x||'').replace(/\u0671/g,'\u0627').replace(/(^|[\s\u00A0(])([\u0648\u0641\u0628\u0644][\u064E\u0650]?)?[\u0623\u0625]/g,(m,p,q)=>p+(q||'')+'\u0627').replace(/\u06E1/g,'\u0652');
 const arNum=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
 function qCached(refs){ const k=refs.join('|'); if(qMem[k]) return qMem[k]; try{ const c=JSON.parse(lsGet('vird:q:'+k)||'null'); if(c&&c.ar) return qMem[k]=c; }catch(e){} return null; }
 async function qFetch(path){ for(const ed of ['tr.diyanet','tr.vakfi']){ try{ const j=await httpGet('https://api.alquran.cloud/v1'+path+'/editions/quran-uthmani,'+ed); if(j&&j.code===200&&Array.isArray(j.data)&&j.data.length>=2) return {j,ed}; }catch(e){} } throw new Error('yüklenemedi'); }
@@ -1905,7 +1907,7 @@ function zCard(t,x,i){
   const v=Math.min(x.rep,Math.floor(val(t,rd.u,rd.k,'z_'+x.id))),done=v>=x.rep;
   let body;
   if(x.q){ const c=qCached(x.q),qk=x.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(x.q),0); body='<p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi. İlk açılışta internet gerekir; bağlantı gelince tekrar denenecek.':'Âyet metni yükleniyor… (ilk seferde internet gerekir)')+'</p>'; }
-    else body=(c.bes?'<p class="zc-bes" lang="ar" dir="rtl">'+esc(c.bes)+'</p>':'')+'<p class="zc-ar" lang="ar" dir="rtl">'+esc(c.ar)+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p>'; }
+    else body=(c.bes?'<p class="zc-bes" lang="ar" dir="rtl">'+esc(trM(c.bes))+'</p>':'')+'<p class="zc-ar" lang="ar" dir="rtl">'+esc(trM(c.ar))+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p>'; }
   else body='<p class="zc-ar" lang="ar" dir="rtl">'+esc(x.ar)+'</p><p class="zc-ok">'+esc(x.ok)+'</p><p class="zc-tr">'+esc(x.tr)+'</p>';
   return '<article class="zcard'+(done?' done':'')+'" data-zi="'+i+'"><header><b>'+esc(x.t)+'</b><span class="zc-rep">'+(x.rep>1?x.rep+' kez':'1 kez')+'</span></header>'+body+
     (x.f?'<p class="zc-f">'+esc(x.f)+'</p>':'')+'<p class="zc-src">Kaynak: '+esc(x.src)+'</p>'+
