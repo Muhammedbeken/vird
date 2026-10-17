@@ -471,6 +471,31 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .kible.aligned .kb-ptr{background:var(--turq)}
 .kb-tip{max-width:420px;font-size:.82rem}
 .kb-diag{font-size:.75rem;opacity:.7}
+/* Kur'an */
+.mushaf{z-index:46}
+.mp-meal-btn{margin-left:auto}
+.mp-meal-btn[aria-pressed="true"]{background:var(--cobalt-soft);color:var(--cobalt);border-color:var(--cobalt-soft)}
+.mp-page{font-family:"Amiri Quran",var(--ar);font-size:1.75rem;line-height:2.45;text-align:justify;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.mp-ay{}
+.mp-n{color:var(--turq);font-size:1.05rem;white-space:nowrap}
+.mp-sh{display:flex;justify-content:center;margin:8px 0 4px}
+.mp-sh span{font-family:var(--serif);font-size:1rem;direction:ltr;color:var(--cobalt);border:1.5px solid var(--gold);border-radius:999px;padding:3px 16px;background:var(--bg)}
+.mp-bes{text-align:center;margin:0 0 6px;font-size:1.5rem;color:var(--ink-2)}
+.mp-meal{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.mp-meal h3{font-family:var(--serif);margin:0 0 6px;font-size:1.05rem}
+.mp-tr{margin:8px 0;line-height:1.55}
+.mp-tr b{color:var(--cobalt)}
+.mp-bottom{border-top:1px solid var(--line);background:var(--surface);padding:8px 12px calc(10px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)))}
+.mp-count{margin:0 0 6px;font-size:.82rem;color:var(--ink-2);text-align:center}
+.mp-nav{display:flex;gap:8px;max-width:620px;margin:0 auto}
+.mp-nav .btn{height:46px}
+.mp-read{flex:1}
+.mp-jumpbox{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 14px}
+.mp-jump{display:grid;grid-template-columns:1fr;gap:8px;max-width:620px;margin:0 auto}
+.mcard2 .mbar{display:block;height:4px;border-radius:2px;background:var(--surface-2);position:relative;overflow:hidden}
+.mcard2 .mbar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(var(--p)*100%);background:var(--turq)}
+.mcard2{margin-top:14px}
+.shr{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 .7rem;font-size:.88rem}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -528,6 +553,12 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
     <p class="z-hint kb-diag" id="kbDiag"></p>
     <p class="z-hint kb-tip">Doğru sonuç için telefonu düz tut; metal eşyalardan ve elektronik cihazlardan uzak dur. Sapma varsa telefonu havada birkaç kez 8 çizerek pusulayı ayarla.</p>
   </div>
+</div>
+<div class="reader mushaf" id="mushaf" tabindex="-1" hidden role="dialog" aria-modal="true" aria-labelledby="mpTitle">
+  <div class="rd-top"><button class="btn ghost" data-mp="close">Kapat</button><div class="rd-tt"><h2 id="mpTitle">Kur'an-ı Kerim</h2><span id="mpSub"></span></div><button class="btn mp-meal-btn" id="mpMeal" data-mp="meal" aria-pressed="true">Meal</button></div>
+  <div class="mp-jumpbox" id="mpJumpBox" hidden></div>
+  <div class="rd-body" id="mpBody"></div>
+  <div class="mp-bottom"><p class="mp-count" id="mpCount"></p><div class="mp-nav"><button class="btn" data-mp="next" id="mpNext" aria-label="Sonraki sayfa">‹</button><button class="btn" data-mp="jump">Git</button><button class="btn plus mp-read" data-mp="read" id="mpRead">Okudum, sonraki sayfa</button><button class="btn" data-mp="prev" id="mpPrev" aria-label="Önceki sayfa">›</button></div></div>
 </div>
 <div class="sheet-bg" id="tedBg" hidden style="z-index:65"></div>
 <div class="sheet ted" id="ted" hidden role="dialog" aria-modal="true" aria-labelledby="tedTitle" style="z-index:70"><div class="sheet-body" id="tedBody" style="padding-top:18px"></div></div>
@@ -591,6 +622,7 @@ const isEsma=t=>t.unit==='esma';
 const isDk=t=>t.unit==='dk';
 const tgt=t=>isDk(t)?t.target*60:t.target;
 const isList=t=>t.unit==='liste';
+const isQuranTask=t=>t.unit==='sayfa'&&(t.id==='kuran'||t.id==='kuran_ortak'||/KUR.?AN/.test(String(t.name||'').toLocaleUpperCase('tr-TR')));
 const isBinary=t=>!isEsma(t)&&!isDk(t)&&!isList(t)&&t.target===1;
 const ZMAP={}; for(const L of [ZIKIR_SABAH,ZIKIR_AKSAM,NEBEVI_DUALAR]) for(const x of L) ZMAP[x.id]=x;
 const dayIdx=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
@@ -606,6 +638,7 @@ const STAR=(function(){const R=47,r=R*0.7654,p=[];for(let i=0;i<16;i++){const a=
 const MINI='<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="'+STAR+'"/></svg>';
 const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 const KBICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>';
+const SHICON='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>';
 const CHECKS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>';
 function ringHTML(f,cat){ const rc='var(--c-'+(CATNAME[cat]?cat:'diger')+')';
   if(f>=0.9999) return '<span class="ring ok" style="--rc:'+rc+'" aria-hidden="true">'+CHECKS+'</span>';
@@ -1144,8 +1177,8 @@ function dailyHTML(d,compact){
   const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length];
   const src='<p class="d-src">'+(A&&A.tr?(A.ed==='tr.vakfi'?'Meal: Türkiye Diyanet Vakfı':'Meal: Diyanet İşleri Başkanlığı'):'')+'</p>';
   const peek=x=>{ x=String(x||''); return x.length>70?x.slice(0,70).replace(/\s+\S*$/,'')+'…':x; };
-  return '<section class="card card-pad daily"><h2 class="h2">Günün âyeti</h2>'+a+src+'</section>'+
-    '<section class="card card-pad daily"><h2 class="h2">Günün hadisi</h2><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></section>';
+  return '<section class="card card-pad daily"><div class="vh"><h2 class="h2">Günün âyeti</h2>'+(A&&A.tr?'<button class="btn shr" data-share="ayet" aria-label="Günün âyetini paylaş">'+SHICON+' Paylaş</button>':'')+'</div>'+a+src+'</section>'+
+    '<section class="card card-pad daily"><div class="vh"><h2 class="h2">Günün hadisi</h2><button class="btn shr" data-share="hadis" aria-label="Günün hadisini paylaş">'+SHICON+' Paylaş</button></div><p class="d-tr">'+esc(H[0])+'</p><p class="d-ref">'+esc(H[1])+'</p></section>';
 }
 
 async function init(){
@@ -1242,6 +1275,7 @@ function rowHTML(t,u,k){
     else if(isList(t)){ if(!done) ctl='<button class="btn plus" data-act="read">Oku</button>'; }
     else if(isDk(t)){ if(!done) ctl='<button class="btn plus" data-act="timer">'+(run?'Durdur':'Başlat')+'</button>'; }
     else if(t.target>=20){ if(!done) ctl='<button class="btn plus" data-act="open">Say</button>'; }
+    else if(isQuranTask(t)) ctl=(v>0?'<button class="btn" data-act="dec" aria-label="'+n+': bir azalt">−</button>':'')+(!done?'<button class="btn" data-act="inc" aria-label="'+n+': bir sayfa ekle">+1</button>':'')+'<button class="btn plus" data-act="mushaf">Oku</button>';
     else ctl=(v>0?'<button class="btn" data-act="dec" aria-label="'+n+': bir azalt">−</button>':'')+(!done?'<button class="btn plus" data-act="inc" aria-label="'+n+': bir ekle">+1</button>':'');
   }
   const bin=ed&&isBinary(t),op=ed&&!isBinary(t);
@@ -1309,6 +1343,7 @@ function viewToday(){
   let h='<section class="hero"><div class="sum">'+starHTML(true).replace('class="star"','class="star" id="sumStar"')+'<div><p class="sum-who">'+esc(greet())+(myName()?', '+esc(myName()):'')+'</p><p class="sum-main num">'+(c.total?c.done+' / '+c.total+' görev tamam':'Bugün için görev yok')+'</p><p class="sum-sub'+(n?' streak':'')+'">'+(n?'Tam gün serisi: '+n+' gün':'Bugünü tamamla, seri başlasın')+'</p></div></div>'+
     '<div class="stats"><button class="stat" data-goper="w"><b>'+pctS(cw.pct)+'</b><span>bu hafta</span></button><button class="stat" data-goper="m"><b>'+pctS(cm.pct)+'</b><span>bu ay</span></button><button class="stat" data-goper="d"><b>'+(c.total-c.done)+'</b><span>kalan bugün</span></button></div></section>';
   h+=vakitHTML(d);
+  h+=mushafCardHTML();
   const ts=tasksOf(u).filter(t=>t.period==='d'),keepK='t|'+k+'|'+u;
   if(state.keepKey!==keepK){ state.keepKey=keepK; state.keep=new Set(ts.filter(t=>frac(t,u,k,d)<0.9999).map(t=>t.id)); }
   const left=ts.filter(t=>frac(t,u,k,d)<0.9999||state.keep.has(t.id));
@@ -1488,6 +1523,112 @@ function render(){
   if(cs) renderCounter();
   if(fsel){ try{ const el=v.querySelector(fsel); if(el&&!el.disabled) el.focus({preventScroll:true}); }catch(e){} }
 }
+
+/* paylaş: hayra vesile ol */
+async function shareText(text,title){
+  try{ const S=Plug('Share'); if(S) await S.share({title,text,dialogTitle:'Paylaş'}); else if(navigator.share) await navigator.share({title,text}); else { await navigator.clipboard.writeText(text); toast('Kopyalandı; istediğin yere yapıştırabilirsin.'); } }
+  catch(e){ if(!/cancel|abort/i.test(String((e&&e.message)||e))) toast('Paylaşılamadı.'); }
+}
+function shareDaily(kind){
+  const d=sod(new Date());
+  if(kind==='ayet'){ const A=ayetSt[iso(d)]; if(!A||!A.tr) return; shareText(A.ar+'\n\n'+A.tr+'\n('+(SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet)','Günün âyeti'); }
+  else { const H=HADISLER[(dayN(d)%HADISLER.length+HADISLER.length)%HADISLER.length]; shareText(H[0]+'\n('+H[1]+')','Günün hadisi'); }
+}
+
+/* Kur'an-ı Kerim okuma: Arapça metin (Tanzil, Osmanlı hattı) + Diyanet meali, bir kez indirilir */
+const QDB={db:null};
+function qdbOpen(){ return new Promise((res,rej)=>{ if(QDB.db) return res(QDB.db); try{ const r=indexedDB.open('vird-quran',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>{ QDB.db=r.result; res(r.result); }; r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); }
+async function qdbGet(k){ const db=await qdbOpen(); return new Promise((res,rej)=>{ const q=db.transaction('kv').objectStore('kv').get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+async function qdbSet(k,v){ const db=await qdbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+let MUSHAF=null,mushafBusy=null;
+async function mushafLoad(onStep){
+  if(MUSHAF) return MUSHAF;
+  try{ const c=await qdbGet('mushaf1'); if(c&&c.pages&&c.pages.length===604){ MUSHAF=c; return c; } }catch(e){}
+  if(mushafBusy) return mushafBusy;
+  mushafBusy=(async()=>{
+    onStep&&onStep('Kur\'an-ı Kerim metni indiriliyor (bir kez)…');
+    const A=await httpGet('https://api.alquran.cloud/v1/quran/quran-uthmani');
+    onStep&&onStep('Meal indiriliyor…');
+    let T=null,ed='tr.diyanet'; try{ T=await httpGet('https://api.alquran.cloud/v1/quran/tr.diyanet'); }catch(e){}
+    if(!T||T.code!==200){ T=await httpGet('https://api.alquran.cloud/v1/quran/tr.vakfi'); ed='tr.vakfi'; }
+    if(!A||A.code!==200||!T||T.code!==200) throw new Error('indirilemedi');
+    const pages=Array.from({length:604},()=>[]),sure=[];
+    A.data.surahs.forEach((S,si)=>{ const TS=T.data.surahs[si]; sure.push({n:S.number,page:S.ayahs[0].page,cnt:S.ayahs.length});
+      S.ayahs.forEach((a,ai)=>{ let x=String(a.text||''),bes=0;
+        if(ai===0&&S.number!==1&&S.number!==9){ const w=x.split(' '); if(w[0]&&w[0].indexOf('بِسْمِ')===0){ x=w.slice(4).join(' '); bes=1; } }
+        if(ai===0&&S.number!==1&&S.number!==9) bes=1;
+        pages[a.page-1].push([S.number,a.numberInSurah,x,(TS.ayahs[ai]||{}).text||'',a.juz,bes]); }); });
+    const m={v:1,ed,pages,sure}; await qdbSet('mushaf1',m).catch(()=>{}); MUSHAF=m; return m;
+  })();
+  try{ return await mushafBusy; } finally{ mushafBusy=null; }
+}
+const mp={on:false,page:1,tid:null,meal:true};
+function mushafLast(){ return Math.max(1,Math.min(604,+lsGet('vird:mp')||1)); }
+function mushafCardHTML(){
+  const ts=tasksOf(ME).filter(t=>t.period==='d'&&isQuranTask(t)); if(!ts.length&&!lsGet('vird:mp')) return '';
+  const p=mushafLast(),pct=Math.round((p-1)/604*100);
+  return '<section class="card card-pad mcard2"><div class="vh"><h2 class="h2">Kur\'an-ı Kerim</h2><button class="btn plus" data-mushafgo>'+(lsGet('vird:mp')?'Devam et':'Okumaya başla')+'</button></div><p class="small muted" style="margin:6px 0 8px">'+(lsGet('vird:mp')?'Kaldığın yer: '+p+'. sayfa. Hatimde %'+pct:'Arapça metin ve Diyanet meali; okudukça sayfa görevine kendiliğinden eklenir.')+'</p><span class="mbar" style="--p:'+(pct/100).toFixed(3)+'"></span></section>';
+}
+async function openMushaf(tid){
+  const all=tasksOf(ME); let t=tid?all.find(x=>x.id===tid):null;
+  if(!t) t=all.find(x=>x.id==='kuran')||all.find(x=>x.period==='d'&&isQuranTask(x))||null;
+  mp.tid=t?t.id:null; mp.on=true; mp.page=+lsGet('vird:mp'+(mp.tid?':'+mp.tid:''))||mushafLast(); mp.meal=lsGet('vird:mpmeal')!=='0';
+  $('mushaf').hidden=false; document.body.style.overflow='hidden'; $('mushaf').focus({preventScroll:true});
+  $('mpBody').innerHTML='<p class="note muted" style="padding:30px 10px;text-align:center" id="mpWait">Hazırlanıyor…</p>';
+  try{ await mushafLoad(m=>{ const w=$('mpWait'); if(w) w.textContent=m; }); }
+  catch(e){ console.warn(e); $('mpBody').innerHTML='<div style="padding:30px 10px;text-align:center"><p class="err">Kur\'an metni indirilemedi. İlk açılışta internet gerekir (yaklaşık 3 MB, bir kez).</p><button class="btn plus" data-mp="retry">Tekrar dene</button></div>'; return; }
+  renderMushaf(true);
+}
+function closeMushaf(){ mp.on=false; $('mushaf').hidden=true; document.body.style.overflow=''; render(); }
+function mpTask(){ return mp.tid?tasksOf(ME).find(x=>x.id===mp.tid):null; }
+function renderMushaf(top){
+  if(!MUSHAF||!mp.on) return; const P=MUSHAF.pages[mp.page-1]; if(!P||!P.length) return;
+  const f=P[0],surs=[...new Set(P.map(a=>a[0]))].map(n=>SURELER[n-1]+' sûresi');
+  $('mpTitle').textContent=surs.join(', '); $('mpSub').textContent=mp.page+'. sayfa, '+f[4]+'. cüz';
+  $('mpMeal').setAttribute('aria-pressed',String(mp.meal));
+  let ar='',tr='';
+  for(const a of P){
+    if(a[1]===1){ ar+='<div class="mp-sh"><span>'+esc(SURELER[a[0]-1])+' sûresi</span></div>'+(a[5]?'<p class="mp-bes" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>':''); }
+    ar+='<span class="mp-ay" lang="ar" dir="rtl">'+esc(a[2])+' <span class="mp-n">﴿'+arNum(a[1])+'﴾</span></span> ';
+    tr+='<p class="mp-tr"><b>'+(a[1]===1||a===P[0]?esc(SURELER[a[0]-1])+' ':'')+a[1]+'.</b> '+esc(a[3])+'</p>';
+  }
+  const t=mpTask(),k=docKey('d',sod(new Date())),v=t?Math.floor(val(t,ME,k)):0;
+  const doneKey='vird:mpd:'+iso(new Date())+':'+(mp.tid||''),doneSet=new Set(String(lsGet(doneKey)||'').split(',').filter(Boolean));
+  $('mpBody').innerHTML='<div class="mp-page" dir="rtl" lang="ar">'+ar+'</div>'+(mp.meal?'<div class="mp-meal"><h3>Meal</h3>'+tr+'<p class="zc-src">Meal: '+(MUSHAF.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'. Arapça metin: Tanzil Projesi.</p></div>':'');
+  $('mpCount').textContent=t?(t.name+': bugün '+v+' / '+t.target+' sayfa'+(doneSet.has(String(mp.page))?', bu sayfa sayıldı':'')):'Sayfa görevin yok; okuman sayılmaz.';
+  $('mpRead').disabled=false; $('mpRead').textContent=doneSet.has(String(mp.page))?'Sonraki sayfa':'Okudum, sonraki sayfa';
+  $('mpPrev').disabled=mp.page<=1; $('mpNext').disabled=mp.page>=604;
+  if(top) $('mpBody').scrollTop=0;
+}
+function mpGo(p){ mp.page=Math.max(1,Math.min(604,p)); lsSet('vird:mp',String(mp.page)); if(mp.tid) lsSet('vird:mp:'+mp.tid,String(mp.page)); renderMushaf(true); }
+function mpRead(){
+  const t=mpTask(),doneKey='vird:mpd:'+iso(new Date())+':'+(mp.tid||''),doneSet=new Set(String(lsGet(doneKey)||'').split(',').filter(Boolean));
+  if(t&&!doneSet.has(String(mp.page))){
+    const k=docKey('d',sod(new Date())),v=Math.floor(val(t,ME,k));
+    if(v<t.target){ setVal(t,ME,k,t.id,v+1); buzz(12); if(v+1>=t.target){ buzz([30,60,30]); toast(t.name+': bugünkü hedef tamam. Allah kabul etsin.'); } }
+    doneSet.add(String(mp.page)); lsSet(doneKey,[...doneSet].join(','));
+  }
+  if(mp.page<604) mpGo(mp.page+1); else { renderMushaf(); toast('Hatim tamam. Allah kabul etsin.'); }
+}
+function mpJumpHTML(){
+  return '<div class="mp-jump"><label class="fl" style="margin:0">Sûre<select id="mpSure">'+MUSHAF.sure.map(x=>'<option value="'+x.page+'">'+x.n+'. '+esc(SURELER[x.n-1])+'</option>').join('')+'</select></label><label class="fl" style="margin:0">Sayfa<input type="number" id="mpPageIn" min="1" max="604" inputmode="numeric" value="'+mp.page+'"></label><label class="fl" style="margin:0">Cüz<select id="mpJuz">'+Array.from({length:30},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+'. cüz</option>').join('')+'</select></label><div class="ed-row" style="margin-top:10px"><button class="btn ghost" data-mp="jx">Vazgeç</button><button class="btn plus" data-mp="jgo">Git</button></div></div>';
+}
+$('mushaf').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mp]'); if(!b) return; const a=b.dataset.mp;
+  if(a==='close') closeMushaf();
+  else if(a==='retry') openMushaf(mp.tid);
+  else if(a==='meal'){ mp.meal=!mp.meal; lsSet('vird:mpmeal',mp.meal?'1':'0'); renderMushaf(); }
+  else if(a==='prev') mpGo(mp.page-1);
+  else if(a==='next') mpGo(mp.page+1);
+  else if(a==='read') mpRead();
+  else if(a==='jump'){ if(!MUSHAF) return; const j=$('mpJumpBox'); if(!j.hidden){ j.hidden=true; return; } j.innerHTML=mpJumpHTML(); j.hidden=false; }
+  else if(a==='jx') $('mpJumpBox').hidden=true;
+  else if(a==='jgo'){ const n=parseInt($('mpPageIn').value,10); $('mpJumpBox').hidden=true; if(n>=1&&n<=604) mpGo(n); }
+});
+$('mushaf').addEventListener('change',e=>{
+  if(e.target.id==='mpSure'){ $('mpPageIn').value=e.target.value; }
+  if(e.target.id==='mpJuz'&&MUSHAF){ const j=+e.target.value; const i=MUSHAF.pages.findIndex(P=>P.some(a=>a[4]===j)); if(i>=0) $('mpPageIn').value=i+1; }
+});
 
 /* okuma ekranı: sabah/akşam zikirleri ve dualar */
 const qMem={};
@@ -1727,6 +1868,8 @@ $('view').addEventListener('click',e=>{
   if(e.target.closest('[data-goto2]')){ state.tab='aile'; savePrefs(); render(); window.scrollTo(0,0); return; }
   if(e.target.closest('[data-vk="ayar"]')){ openSettings('vakit'); return; }
   if(e.target.closest('[data-vk="kible"]')){ openKible(); return; }
+  const sh=e.target.closest('[data-share]'); if(sh){ shareDaily(sh.dataset.share); return; }
+  if(e.target.closest('[data-mushafgo]')){ openMushaf(null); return; }
   if(e.target.closest('[data-vk="tekrar"]')){ state.vkErr=''; ensureVakitler(true); return; }
   const gb=e.target.closest('[data-g],[data-gid2]');
   if(gb){
@@ -1747,6 +1890,7 @@ $('view').addEventListener('click',e=>{
   const u=state.view,k=docKey(period(),state.cursor),a=b.dataset.act;
   if(a==='open') openCounter(t.id,li.dataset.ei);
   else if(a==='read') openReader(t.id);
+  else if(a==='mushaf') openMushaf(t.id);
   else if(a==='toggle'){ setVal(t,u,k,t.id,val(t,u,k)>=1?0:1); render(); }
   else if(a==='inc'){ const v=Math.floor(val(t,u,k))+1; setVal(t,u,k,t.id,v); if(v>=tgt(t)) buzz([30,60,30]); render(); }
   else if(a==='dec'){ setVal(t,u,k,t.id,Math.floor(val(t,u,k))-1); render(); }
@@ -1895,7 +2039,7 @@ $('sheetX').addEventListener('click',closeSettings);
 $('sheetBg').addEventListener('click',closeSettings);
 $('btnSettings').addEventListener('click',openSettings);
 $('zBottom').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.id==='zIn'){ e.preventDefault(); const b=$('zBottom').querySelector('[data-z="setm"]'); if(b) b.click(); } });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(kb.on) closeKible(); else if(rd) closeReader(); else if(ted) closeTaskEditor(); else if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(mp.on) closeMushaf(); else if(kb.on) closeKible(); else if(rd) closeReader(); else if(ted) closeTaskEditor(); else if(!$('sheet').hidden) closeSettings(); else if(cs) closeCounter(); } });
 
 init();
 })();
