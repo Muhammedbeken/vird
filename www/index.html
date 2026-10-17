@@ -349,6 +349,12 @@ input[type=text],input[type=number],input[type=email],select{font:inherit;font-s
 .opts button{flex:1;min-width:5.5rem}
 .vakit{margin-top:14px}
 .vsel{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:12px}
+.vadj{display:flex;flex-direction:column}
+.vadj-r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.vadj-r:first-child{border-top:0}
+.vadj-r b{display:block;font-weight:600}
+.vadj-r small{display:block;font-size:.8rem;color:var(--ink-2)}
+.vadj-r input[type=time]{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:.35rem .5rem}
 .vsel label{display:flex;align-items:center;gap:8px;font-size:.95rem}
 .vsel input:disabled+*,.vsel label:has(input:disabled){opacity:.5}
 select:disabled{opacity:.5}
@@ -464,6 +470,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .kible.aligned .kb-ring{stroke:var(--turq);stroke-width:6}
 .kible.aligned .kb-ptr{background:var(--turq)}
 .kb-tip{max-width:420px;font-size:.82rem}
+.kb-diag{font-size:.75rem;opacity:.7}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -518,6 +525,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
     </div>
     <p class="z-msg" id="kbMsg" aria-live="polite"></p>
     <p class="z-hint" id="kbInfo"></p>
+    <p class="z-hint kb-diag" id="kbDiag"></p>
     <p class="z-hint kb-tip">Doğru sonuç için telefonu düz tut; metal eşyalardan ve elektronik cihazlardan uzak dur. Sapma varsa telefonu havada birkaç kez 8 çizerek pusulayı ayarla.</p>
   </div>
 </div>
@@ -966,7 +974,7 @@ async function scheduleReminders(ask){
         list.push(Object.assign({id:3000+i*10+r.id,title,body,schedule:{at,allowWhileIdle:true}},ic));
       }
       if(vkNotify()&&VKT&&VKT.key===vkKey()){
-        const day=VKT.days[iso(d)];
+        const day=vkDay(d);
         if(day) VAKIT_BILDIRIM.forEach((k,vi)=>{
           if(!VK.sel[k]) return; const hm2=String(day[k]||'').split(':').map(Number); if(hm2.length!==2||isNaN(hm2[0])||isNaN(hm2[1])) return;
           const at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),hm2[0],hm2[1]-VK.off); if(+at<=now) return;
@@ -997,7 +1005,8 @@ const trTitle=x=>String(x||'').toLocaleLowerCase('tr-TR').replace(/(^|[\s\-\/(])
 const ilIlceleri=il=>{ const r=ILLER.find(x=>x[0]===il); return r?r[1]:[]; };
 function vkLoad(){
   let x=null; try{ x=JSON.parse(lsGet('vird:vk')||'null'); }catch(e){}
-  const v=Object.assign({en:false,off:30,sel:{imsak:true,ogle:true,ikindi:true,aksam:true,yatsi:true},il:'',ilce:''},x||{});
+  const v=Object.assign({en:false,off:30,sel:{imsak:true,ogle:true,ikindi:true,aksam:true,yatsi:true},il:'',ilce:'',adj:{}},x||{});
+  const A={}; for(const k of ['imsak','gunes','ogle','ikindi','aksam','yatsi']){ const n=Math.round(+((v.adj||{})[k])||0); A[k]=Math.max(-30,Math.min(30,n)); } v.adj=A;
   // eski kayıt biçimini dönüştür (konum seçeneği kaldırıldı)
   if(v.il&&typeof v.il==='object') v.il=v.il.ad||''; if(v.ilce&&typeof v.ilce==='object') v.ilce=v.ilce.ad||'';
   const il=ILLER.find(r=>fold(r[0])===fold(v.il)); v.il=il?il[0]:'';
@@ -1071,18 +1080,24 @@ async function ensureVakitler(force){
 function nextVakit(day){
   const n=new Date(),cur=n.getHours()*60+n.getMinutes();
   for(const [k,nm] of VAKIT){ const a=String(day[k]||'').split(':').map(Number); if(a.length!==2) continue; const t=a[0]*60+a[1]; if(t>cur) return {k,nm,left:t-cur}; }
-  const tm=VKT&&VKT.days[iso(addDays(sod(n),1))]; if(tm){ const a=String(tm.imsak||'').split(':').map(Number); if(a.length===2) return {k:'imsak',nm:'İmsak',left:24*60-cur+a[0]*60+a[1],tom:true}; }
+  const tm=vkDay(addDays(sod(n),1)); if(tm){ const a=String(tm.imsak||'').split(':').map(Number); if(a.length===2) return {k:'imsak',nm:'İmsak',left:24*60-cur+a[0]*60+a[1],tom:true}; }
   return null;
 }
+function shiftHM(hm,m){ const a=String(hm||'').split(':').map(Number); if(a.length!==2||isNaN(a[0])) return hm; let t=(a[0]*60+a[1]+m)%1440; if(t<0) t+=1440; return pad(Math.floor(t/60))+':'+pad(t%60); }
+function hmDiff(a,b){ const x=String(a||'').split(':').map(Number),y=String(b||'').split(':').map(Number); if(x.length!==2||y.length!==2||isNaN(x[0])||isNaN(y[0])) return 0; let d=(x[0]*60+x[1])-(y[0]*60+y[1]); if(d>720) d-=1440; if(d<-720) d+=1440; return d; }
+function vkBase(d){ return VKT&&VKT.key===vkKey()&&VKT.days[iso(d)]||null; }
+function vkDay(d,adj){ const b=vkBase(d); if(!b) return null; const A=adj||VK.adj||{},o={}; for(const [k] of VAKIT) o[k]=A[k]?shiftHM(b[k],A[k]):b[k]; return o; }
+const adjText=A=>VAKIT.filter(([k])=>A&&A[k]).map(([k,n])=>n+' '+(A[k]>0?'+':'')+A[k]+' dk').join(', ');
 const kalanTxt=m=>m>=60?Math.floor(m/60)+' sa '+(m%60)+' dk':m+' dk';
 function vkSourceNote(){
   if(!VKT) return '';
-  if(VKT.src==='diyanet') return 'Kaynak: Diyanet İşleri Başkanlığı.'+(VKT.center?' Diyanet '+VK.ilce+' için ayrı vakit yayımlamıyor; '+VK.il+' merkez vakitleri gösteriliyor.':'');
-  return 'Diyanet servisine şu an ulaşılamadı; vakitler hesaplamayla bulundu ve birkaç dakika farklı olabilir. Bağlantı gelince Diyanet vakitlerine dönülür.';
+  const at=adjText(VK.adj),ex=at?' Senin düzeltmen uygulandı: '+at+'.':'';
+  if(VKT.src==='diyanet') return 'Kaynak: Diyanet İşleri Başkanlığı.'+(VKT.center?' Diyanet '+VK.ilce+' için ayrı vakit yayımlamıyor; '+VK.il+' merkez vakitleri esas alındı.':'')+ex;
+  return 'Diyanet servisine şu an ulaşılamadı; vakitler hesaplamayla bulundu ve birkaç dakika farklı olabilir. Bağlantı gelince Diyanet vakitlerine dönülür.'+ex;
 }
 function vakitHTML(d){
   if(!vkReady()) return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn" data-vk="ayar">Ayarla</button></div><p class="small muted" style="margin:6px 0 0">'+(VK.en?'İlini ve ilçeni seç; vakitleri görür, her vakitten önce bildirim alırsın.':'İlini ve ilçeni seç; vakitleri görür, istersen her vakitten önce bildirim alırsın.')+'</p></section>';
-  const day=VKT&&VKT.key===vkKey()&&VKT.days[iso(d)];
+  const day=vkDay(d);
   if(!day){ ensureVakitler(); return '<section class="card card-pad vakit"><div class="vh"><h2 class="h2">Namaz vakitleri</h2><button class="btn kbtn" data-vk="kible" aria-label="Kıble yönünü göster">'+KBICON+' Kıble</button></div><p class="small muted vloc">'+esc(vkLabel())+'</p><p class="small muted" style="margin:6px 0 0">'+esc(state.vkErr||'Vakitler yükleniyor…')+'</p>'+(state.vkErr?'<p style="margin:10px 0 0"><button class="btn" data-vk="tekrar">Tekrar dene</button></p>':'')+'</section>'; }
   ensureVakitler();
   const isToday=+sod(d)===+sod(new Date()),nx=isToday?nextVakit(day):null,cuma=d.getDay()===5;
@@ -1091,7 +1106,7 @@ function vakitHTML(d){
     (nx?'<p class="vnext" id="vkNext">'+esc((nx.tom?'Yarın ':'')+(nx.k==='ogle'&&cuma?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left))+'</p>':'')+
     '<p class="fine">'+esc(vkSourceNote())+'</p></section>';
 }
-setInterval(()=>{ const el=document.getElementById('vkNext'); if(!el||!VKT) return; const day=VKT.days[iso(new Date())]; if(!day) return; const nx=nextVakit(day); el.textContent=nx?(nx.tom?'Yarın ':'')+(nx.k==='ogle'&&new Date().getDay()===5?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left):''; },30000);
+setInterval(()=>{ const el=document.getElementById('vkNext'); if(!el||!VKT) return; const day=vkDay(new Date()); if(!day) return; const nx=nextVakit(day); el.textContent=nx?(nx.tom?'Yarın ':'')+(nx.k==='ogle'&&new Date().getDay()===5?'Cuma':nx.nm)+' vaktine '+kalanTxt(nx.left):''; },30000);
 
 async function checkUpdate(){
   if(!REPO||!BUILD) return;
@@ -1546,9 +1561,9 @@ async function kibleKoord(){
   const m=j&&j.data&&j.data.meta; if(!m||m.latitude==null) throw new Error('konum bulunamadı');
   c={key,lat:+m.latitude,lng:+m.longitude}; lsSet('vird:kc',JSON.stringify(c)); return c;
 }
-const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null,lh:null,acc:3};
+const kb={on:false,q:null,h:null,sm:null,aligned:false,got:false,timer:null,lh:null,acc:3,n:0,src:'',err:''};
 let CompassP=null; function compassPlugin(){ if(CompassP!==null) return CompassP; const C=window.Capacitor; CompassP=(C&&C.isNativePlatform&&C.isNativePlatform()&&C.registerPlugin)?C.registerPlugin('Compass'):false; return CompassP; }
-function kbHeading(h,acc){ if(!kb.on||h==null||isNaN(h)) return; kb.got=true; if(acc!=null) kb.acc=acc; if(kb.sm==null) kb.sm=h; else { const d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.3+360)%360; } kbDraw(); }
+function kbHeading(h,acc){ if(!kb.on||h==null||isNaN(h)) return; kb.got=true; kb.n++; if(acc!=null) kb.acc=acc; if(kb.sm==null) kb.sm=h; else { const d=((h-kb.sm+540)%360)-180; kb.sm=(kb.sm+d*0.3+360)%360; } kbDraw(); }
 const compassDir=a=>['kuzey','kuzey-kuzeydoğu','kuzeydoğu','doğu-kuzeydoğu','doğu','doğu-güneydoğu','güneydoğu','güney-güneydoğu','güney','güney-güneybatı','güneybatı','batı-güneybatı','batı','batı-kuzeybatı','kuzeybatı','kuzey-kuzeybatı'][Math.round(((a%360)+360)%360/22.5)%16];
 function kbOrient(e){
   let h=null;
@@ -1581,11 +1596,14 @@ async function openKible(){
     $('kbMsg').textContent='Pusula bekleniyor…'; kbDraw();
   }catch(e){ console.warn(e); $('kbMsg').textContent='Kıble yönü için bir kez internet gerekiyor. Bağlantını kontrol edip tekrar aç.'; return; }
   let native=false; const CP=compassPlugin();
-  if(CP){ try{ const c2=await kibleKoord(); const r=await CP.start({lat:c2.lat,lng:c2.lng}); if(r&&r.available){ native=true; kb.lh=await CP.addListener('heading',d=>kbHeading(+d.heading,d.accuracy)); } }catch(e){ console.warn('pusula',e); } }
+  kb.n=0; kb.err=''; kb.src='tarayıcı';
+  if(CP){ try{ const c2=await kibleKoord(); kb.lh=await CP.addListener('heading',d=>kbHeading(+d.heading,d.accuracy)); const r=await CP.start({lat:c2.lat,lng:c2.lng}); kb.src=r&&r.mode==='dondurme'?'telefonun dönüş sensörü':r&&r.mode==='manyetik'?'telefonun manyetik pusulası':'sensör bulunamadı'; if(r&&r.available) native=true; else if(kb.lh){ kb.lh.remove(); kb.lh=null; } }catch(e){ console.warn('pusula',e); kb.err=String((e&&e.message)||e).slice(0,80); } }
+  kbDiag();
   if(!kb.on){ if(native) closeKible(); return; }
   if(!native){ window.addEventListener('deviceorientationabsolute',kbOrient,true); window.addEventListener('deviceorientation',kbOrient,true); }
   clearTimeout(kb.timer); kb.timer=setTimeout(()=>{ if(kb.on&&!kb.got) $('kbMsg').textContent='Telefonunda pusula bulunamadı. Kıble, kuzeyden saat yönünde '+Math.round(kb.q)+'° yönündedir; bir pusula ya da güneşin yönüyle bulabilirsin.'; },2500);
 }
+function kbDiag(){ const el=$('kbDiag'); if(!el||!kb.on) return; el.textContent='Sensör: '+kb.src+', okuma: '+kb.n+(kb.err?', hata: '+kb.err:'')+', sürüm 1.0.'+(BUILD||0); setTimeout(kbDiag,1000); }
 function closeKible(){ kb.on=false; clearTimeout(kb.timer); try{ if(kb.lh){ kb.lh.remove(); kb.lh=null; } const CP=compassPlugin(); if(CP) CP.stop().catch(()=>{}); }catch(e){} window.removeEventListener('deviceorientationabsolute',kbOrient,true); window.removeEventListener('deviceorientation',kbOrient,true); $('kible').hidden=true; document.body.style.overflow=''; }
 $('kbClose').addEventListener('click',closeKible);
 $('kbSet').addEventListener('click',()=>{ closeKible(); openSettings('vakit'); });
@@ -1793,6 +1811,14 @@ function renderSheet(focusSel){
       h+='<h3>Bildirim</h3><div class="ed-row"><label class="fl" style="flex:1;margin-top:0">Ne kadar önce<select id="vkOff"'+(v.en?'':' disabled')+'>'+[15,20,30,45,60].map(n=>'<option value="'+n+'"'+(+v.off===n?' selected':'')+'>'+n+' dakika önce</option>').join('')+'</select></label></div>';
       h+='<div class="vsel">'+VAKIT_BILDIRIM.map(k=>'<label><input type="checkbox" data-vks="'+k+'"'+(v.sel[k]?' checked':'')+(v.en?'':' disabled')+'> '+VAKITN[k]+'</label>').join('')+'</div>';
       h+='<p class="ed-note">Vakitler, bildirim açık olmasa da Bugün ekranında görünür.</p>';
+      if(v.il&&v.ilce){
+        const today=sod(new Date()),b=vkKey(v)===vkKey()?vkBase(today):null,adj=v.adj||{};
+        h+='<h3>Saatleri camime göre ayarla</h3><p class="ed-note" style="margin-top:0">Mahallendeki caminin ya da Google\'ın gösterdiği bugünkü saatleri yaz; aradaki fark her güne uygulanır.</p>';
+        if(!b) h+='<p class="ed-note">Önce vakitlerin yüklenmesi gerekiyor. Kaydedip bir kez Bugün ekranına dön, sonra buraya gel.</p>';
+        else h+='<div class="vadj">'+VAKIT.map(([k,nm])=>{ const cur=adj[k]?shiftHM(b[k],adj[k]):b[k]; return '<label class="vadj-r"><span><b>'+nm+'</b><small>Diyanet '+b[k]+(adj[k]?', fark '+(adj[k]>0?'+':'')+adj[k]+' dk':'')+'</small></span><input type="time" data-vadj="'+k+'" value="'+cur+'"></label>'; }).join('')+'</div>'+
+          (adjText(adj)?'<p><button class="btn ghost" data-act="vkadj0">Düzeltmeleri sıfırla</button></p>':'');
+      }
+
     } else if(sec==='gorunum'){
       h+='<h3>Yazı boyutu</h3><div class="seg opts" role="group">'+[['0.9','Küçük'],['1','Normal'],['1.12','Büyük'],['1.25','Çok büyük']].map(([v,n])=>'<button data-fs="'+v+'" aria-pressed="'+(String(APP.fs)===v)+'" style="font-size:'+(+v)+'rem">'+n+'</button>').join('')+'</div>';
       h+='<h3>Tema</h3><div class="seg opts" role="group">'+[['auto','Sistem'],['light','Açık'],['dark','Koyu']].map(([v,n])=>'<button data-th="'+v+'" aria-pressed="'+(APP.theme===v)+'">'+n+'</button>').join('')+'</div><p class="ed-note">Görünüm ayarları hemen uygulanır ve sadece bu telefon için geçerlidir.</p>';
@@ -1821,8 +1847,9 @@ function onDraft(e){
   if(el.id==='vkEn'){ if(e.type!=='change') return; v.en=el.checked; renderSheet(); return; }
   if(el.id==='vkOff'){ v.off=+el.value||30; return; }
   if(el.dataset.vks){ v.sel[el.dataset.vks]=el.checked; return; }
-  if(el.id==='vkIl'){ if(e.type!=='change') return; v.il=el.value; v.ilce=ilIlceleri(v.il).length===1?ilIlceleri(v.il)[0]:''; renderSheet(); return; }
-  if(el.id==='vkIlce'){ if(e.type!=='change') return; v.ilce=el.value; renderSheet(); return; }
+  if(el.dataset.vadj){ if(e.type!=='change') return; const b=vkBase(sod(new Date())); if(!b) return; const k=el.dataset.vadj,dd=hmDiff(el.value,b[k]); v.adj=Object.assign({},v.adj,{[k]:Math.max(-30,Math.min(30,dd))}); renderSheet(); return; }
+  if(el.id==='vkIl'){ if(e.type!=='change') return; v.adj={}; v.il=el.value; v.ilce=ilIlceleri(v.il).length===1?ilIlceleri(v.il)[0]:''; renderSheet(); return; }
+  if(el.id==='vkIlce'){ if(e.type!=='change') return; v.adj={}; v.ilce=el.value; renderSheet(); return; }
   if(el.id==='gNameEd'){ draft.gname=el.value; return; }
   if(el.dataset.ri!==undefined){ const r=draft.rem[+el.dataset.ri]; if(!r) return; if(el.dataset.f==='en') r.en=el.checked; else { const a=String(el.value||'').split(':').map(Number); if(a.length===2&&!isNaN(a[0])&&!isNaN(a[1])){ r.h=a[0]; r.m=a[1]; } } return; }
   if(el.dataset.mi!==undefined){ const m=draft.managed[+el.dataset.mi]; if(m) m.name=el.value; return; }
@@ -1841,6 +1868,7 @@ $('sheetBody').addEventListener('click',e=>{
   else if(a==='addt'){ arr.push({id:uid('t'),name:'',period:b.dataset.p,target:1,unit:'kez',scope:b.dataset.l==='g'?'aile':'kisi',cat:'diger'}); renderSheet('[data-l="'+b.dataset.l+'"][data-ti="'+(arr.length-1)+'"][data-f="name"]'); }
   else if(a==='delt'){ arr.splice(+b.dataset.ti,1); renderSheet(); }
   else if(a==='reset') armConfirm(b,'Emin misin? Tekrar dokun',()=>{ draft.pt=clone(DEF_PERSONAL); renderSheet(); updateFoot(); toast('Kaydet\'e bastığında listen varsayılana döner.'); });
+  else if(a==='vkadj0'){ draft.vk.adj={}; renderSheet(); updateFoot(); }
   else if(a==='goedit'){ closeSettings(); state.tab=state.per='d'; state.cursor=sod(new Date()); state.view=ME; state.editMode=true; savePrefs(); render(); window.scrollTo(0,0); enterAnim(); }
   else if(a==='kick') armConfirm(b,'Emin misin?',()=>{ const m=draft.managed.splice(+b.dataset.mi,1)[0]; if(m) removeManaged(m.id).catch(()=>toast('Çıkarılamadı.')); renderSheet(); });
   else if(a==='leave') armConfirm(b,'Gruptan ayrılsın mı? Tekrar dokun',()=>{ const g=GID; closeSettings(); leaveGroup(g).then(()=>toast('Gruptan ayrıldın.')).catch(()=>toast('Ayrılınamadı.')); });

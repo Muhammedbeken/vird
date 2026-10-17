@@ -26,6 +26,11 @@ public class CompassPlugin extends Plugin implements SensorEventListener {
     private long last = 0;
     private int accuracy = 3;
     private boolean running = false;
+    private Sensor acc, mag;
+    private final float[] grav = new float[3];
+    private final float[] geo = new float[3];
+    private boolean hasGrav = false, hasGeo = false;
+    private String mode = "yok";
 
     @Override
     public void load() {
@@ -33,14 +38,18 @@ public class CompassPlugin extends Plugin implements SensorEventListener {
         if (sm != null) {
             rot = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
             if (rot == null) rot = sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+            acc = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            mag = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+            mode = rot != null ? "dondurme" : (acc != null && mag != null ? "manyetik" : "yok");
         }
     }
 
     @PluginMethod
     public void start(PluginCall call) {
         JSObject res = new JSObject();
-        if (sm == null || rot == null) {
+        if (sm == null || mode.equals("yok")) {
             res.put("available", false);
+            res.put("mode", mode);
             call.resolve(res);
             return;
         }
@@ -49,11 +58,22 @@ public class CompassPlugin extends Plugin implements SensorEventListener {
         GeomagneticField gf = new GeomagneticField(lat.floatValue(), lng.floatValue(), 0f, System.currentTimeMillis());
         declination = gf.getDeclination();
         sm.unregisterListener(this);
-        sm.registerListener(this, rot, SensorManager.SENSOR_DELAY_UI);
+        register();
         running = true;
         res.put("available", true);
+        res.put("mode", mode);
         res.put("declination", declination);
         call.resolve(res);
+    }
+
+    private void register() {
+        if (rot != null) sm.registerListener(this, rot, SensorManager.SENSOR_DELAY_UI);
+        else {
+            hasGrav = false;
+            hasGeo = false;
+            sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_UI);
+            sm.registerListener(this, mag, SensorManager.SENSOR_DELAY_UI);
+        }
     }
 
     @PluginMethod
@@ -70,18 +90,33 @@ public class CompassPlugin extends Plugin implements SensorEventListener {
 
     @Override
     protected void handleOnResume() {
-        if (running && sm != null && rot != null) sm.registerListener(this, rot, SensorManager.SENSOR_DELAY_UI);
+        if (running && sm != null && !mode.equals("yok")) register();
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        long now = System.currentTimeMillis();
-        if (now - last < 50) return;
-        last = now;
         float[] r = new float[9];
+        if (rot != null) {
+            long now = System.currentTimeMillis();
+            if (now - last < 50) return;
+            last = now;
+            SensorManager.getRotationMatrixFromVector(r, event.values);
+        } else {
+            if (event.sensor == acc) {
+                for (int i = 0; i < 3; i++) grav[i] = hasGrav ? grav[i] * 0.85f + event.values[i] * 0.15f : event.values[i];
+                hasGrav = true;
+            } else if (event.sensor == mag) {
+                for (int i = 0; i < 3; i++) geo[i] = hasGeo ? geo[i] * 0.85f + event.values[i] * 0.15f : event.values[i];
+                hasGeo = true;
+            }
+            if (!hasGrav || !hasGeo) return;
+            long now = System.currentTimeMillis();
+            if (now - last < 50) return;
+            last = now;
+            if (!SensorManager.getRotationMatrix(r, null, grav, geo)) return;
+        }
         float[] out = new float[9];
         float[] o = new float[3];
-        SensorManager.getRotationMatrixFromVector(r, event.values);
         int rotation = Surface.ROTATION_0;
         try {
             rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
