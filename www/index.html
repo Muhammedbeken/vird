@@ -510,6 +510,20 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .shr{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 .7rem;font-size:.88rem}
 /* İlim */
 .ders{z-index:46}
+.dz-hd{margin:12px 0;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px}
+.dz-hd p{margin:0;font-family:var(--serif);font-size:1.12rem;line-height:1.55}
+.dz-hd cite{display:block;margin-top:8px;font-style:normal;font-size:.84rem;color:var(--ink-2)}
+.dz-es{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0}
+.dz-es.done{opacity:.75}
+.dz-es-top{display:flex;align-items:center;gap:12px}
+.dz-es-top>div{flex:1;min-width:0}
+.dz-es-top b{display:block;font-family:var(--serif);font-size:1.15rem}
+.dz-es-top span{display:block;color:var(--ink-2);font-size:.92rem;line-height:1.4}
+.dz-es-n{flex:0 0 30px;height:30px;border-radius:50%;display:grid!important;place-items:center;background:var(--cobalt-soft);color:var(--cobalt)!important;font-weight:700;font-size:.85rem!important}
+.dz-es-ar{font-family:var(--ar);font-size:1.9rem!important;color:var(--ink)!important;flex:0 0 auto}
+.dz-es-act{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.dz-es-act .btn{height:44px;min-width:9rem}
+.dz-es-act .btn svg{width:18px;height:18px}
 .task.locked{opacity:.6}
 .task.locked .t-main{cursor:default}
 .lockic{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;color:var(--ink-2)}
@@ -1026,7 +1040,7 @@ async function migrateOld(){
 /* bildirimler */
 const REM_DEF=[
   {id:1,days:[],h:7,m:30,t:'Sabah virdi',b:"Sabah zikirleri ve Kur'an seni bekliyor."},
-  {id:2,days:[],h:13,m:0,t:'Öğle virdi',b:'Günün Esmaları ve ezber.'},
+  {id:2,days:[],h:13,m:0,t:'Öğle virdi',b:'İlim dersin ve ezberin seni bekliyor.'},
   {id:3,days:[],h:21,m:30,t:'Günü tamamla',b:'Bugünden kalanlara bak.'},
   {id:4,days:[1,2,3,4,5,6,7],h:21,m:0,t:'Sünnet oruç hatırlatması',b:'Niyet etmeyi ve sahura kalkmayı unutma.'},
   {id:6,days:[6],h:10,m:0,t:'Hayırlı Cumalar',b:'Kehf sûresi ve bol salavat için güzel bir gün.'},
@@ -1081,12 +1095,13 @@ async function scheduleReminders(ask){
 let remDone=false;
 function addNewTasksOnce(){
   const P=state.people[ME]; if(!P||!db||!Array.isArray(P.tasks)) return;
-  const needZ=!lsGet('vird:zk1'),needN=!lsGet('vird:nm1'); if(!needZ&&!needN) return;
-  lsSet('vird:zk1','1'); lsSet('vird:nm1','1');
+  const needZ=!lsGet('vird:zk1'),needN=!lsGet('vird:nm1'),needE=!lsGet('vird:es1'); if(!needZ&&!needN&&!needE) return;
+  lsSet('vird:zk1','1'); lsSet('vird:nm1','1'); lsSet('vird:es1','1');
   let L=P.tasks.slice(); const have=new Set(L.map(t=>t.id)); let changed=false;
   if(needZ){ const add=DEFAULT_TASKS.filter(t=>['sabah_zikir','aksam_zikir','peygamber_dua'].includes(t.id)&&!have.has(t.id));
     if(add.length){ let at=L.findIndex(t=>t.id==='esma'); at=at<0?L.length:at+1; L.splice(at,0,...clone(add)); changed=true; } }
   if(needN&&!have.has('namaz_vakit')){ const nt=DEFAULT_TASKS.find(t=>t.id==='namaz_vakit'); if(nt){ L=[clone(nt)].concat(L); changed=true; } }
+  if(needE&&L.some(t=>t.id==='esma')){ L=L.filter(t=>t.id!=='esma'); changed=true; }
   if(changed){ P.tasks=L; bump(); db.collection('people').doc(ME).update({tasks:L}).catch(()=>{}); }
 }
 function firstReminders(){ if(remDone) return; remDone=true; scheduleReminders(!lsGet('vird:remAsked')); lsSet('vird:remAsked','1'); }
@@ -1648,10 +1663,25 @@ function render(){
 }
 
 /* İlim */
+(function(){
+  if(ILIMLER.some(x=>x.id==='esma')) return;
+  const nm=i=>ESMA[i][0],mn=i=>ESMA_ANLAM[i];
+  const ya=i=>{ const n=nm(i); if(i===83) return "Yâ Mâlike'l-mülk"; if(i===84) return "Yâ Ze'l-celâli ve'l-ikrâm"; if(i===0) return 'Yâ Allah'; return 'Yâ '+n.replace(/^(El|Er|Es|Eş|Ez|Et|Ed|En)-/,''); };
+  const rs=(seed,a)=>{ let x=seed*9301+49297; const b=a.slice(); for(let i=b.length-1;i>0;i--){ x=(x*9301+49297)%233280; const j=Math.floor(x/233280*(i+1)); [b[i],b[j]]=[b[j],b[i]]; } return b; };
+  const D=[];
+  for(let L=0;L<33;L++){
+    const ix=[L*3,L*3+1,L*3+2],bl=[];
+    if(L===0){ bl.push({p:"Peygamberimiz şöyle buyurmuştur: “Allah'ın doksan dokuz ismi vardır. Kim onları sayıp (anlayıp) korursa cennete girer.” (Buhârî, Tevhîd; Müslim, Zikir; Ebû Hüreyre)"}); bl.push({q:['7:180'],src:"A'râf 7/180"}); bl.push({p:'Her derste üç isim, Arapça yazılışı, anlamı ve ebced sayısıyla yer alır. İstersen her ismi ebced sayısı kadar zikredebilirsin; sayaç kartın üzerindedir.'}); }
+    bl.push({esma:ix});
+    const test=ix.map((i,j)=>{ const bad=(x,y)=>(x===62&&y===95)||(x===95&&y===62),ds=[33,66,20,45].map(o=>(i+o)%99).filter(y=>!bad(i,y)).slice(0,2),c=rs(L*7+j,[nm(i),nm(ds[0]),nm(ds[1])]); return {s:'“'+mn(i)+'” anlamına gelen isim hangisidir?',c,d:c.indexOf(nm(i)),a:nm(i)+': '+mn(i)}; });
+    D.push({id:'es'+(L+1),sev:'Esmâ',t:ix.map(nm).join(', '),dk:3,bl,oz:ix.map(i=>nm(i)+': '+mn(i)),test,uygula:'Bugün dua ederken bu isimlerle seslen: '+ix.map(ya).join(', ')+'.'});
+  }
+  ILIMLER.push({id:'esma',ad:"Esmâü'l-Hüsnâ",cat:'zikir',kisa:"Allah'ın 99 güzel ismi; anlamları ve zikirleri.",dersler:D});
+})();
 const DERS={},DERS_IL={}; for(const il of ILIMLER) for(const d of il.dersler){ DERS[d.id]=d; DERS_IL[d.id]=il; }
 const ILIM_GOREV={arapca:'arapca',tefsir:'tefsir',hadis:'hadis'};
 const dersDone=id=>!!(((state.people[ME]||{}).ilim||{})[id]);
-const dersOpen=id=>{ const il=DERS_IL[id]; if(!il) return false; const i=il.dersler.findIndex(d=>d.id===id); return i<=0||dersDone(id)||dersDone(il.dersler[i-1].id); };
+const dersOpen=id=>{ const il=DERS_IL[id]; if(!il) return false; const d=DERS[id],L=il.dersler.filter(x=>(x.grp||'')===(d.grp||'')),i=L.findIndex(x=>x.id===id); return i<=0||dersDone(id)||dersDone(L[i-1].id); };
 function nextDers(){ const mx=Math.max(...ILIMLER.map(il=>il.dersler.length)); for(let i=0;i<mx;i++) for(const il of ILIMLER){ const d=il.dersler[i]; if(d&&!dersDone(d.id)&&dersOpen(d.id)) return d; } return null; }
 function ilimCardHTML(){
   const nd=nextDers(); if(!nd) return '';
@@ -1664,11 +1694,13 @@ function viewIlim(){
   if(state.ilimSel){
     const il=ILIMLER.find(x=>x.id===state.ilimSel); if(!il){ state.ilimSel=null; return viewIlim(); }
     let h='<button class="back" data-ilim="">‹ İlimler</button><section class="hero"><p class="sum-who">İlim</p><p class="sum-main" style="margin-top:2px">'+esc(il.ad)+'</p><p class="sum-sub">'+esc(il.kisa)+'</p></section>';
-    h+='<section class="group" style="--rc:var(--c-'+il.cat+');margin-top:14px"><div class="g-head"><h3 class="h2">Dersler</h3><span>'+il.dersler.filter(d=>dersDone(d.id)).length+' / '+il.dersler.length+'</span></div><ul class="tasks">'+
-      il.dersler.map((d,i)=>{ const dn=dersDone(d.id),op=dersOpen(d.id);
+    const GRP=[['','Dersler'],['kirk','Kırk Hadis']];
+    for(const [g,gt] of GRP){ const ds=il.dersler.filter(d=>(d.grp||'')===g); if(!ds.length) continue;
+    h+='<section class="group" style="--rc:var(--c-'+il.cat+');margin-top:14px"><div class="g-head"><h3 class="h2">'+(il.id==='esma'&&!g?'İsimler':gt)+'</h3><span>'+ds.filter(d=>dersDone(d.id)).length+' / '+ds.length+'</span></div><ul class="tasks">'+
+      ds.map((d,i)=>{ const dn=dersDone(d.id),op=dersOpen(d.id),meta=il.id==='esma'?'3 isim':g==='kirk'?'Hadis ve açıklaması':esc(d.sev)+', '+d.dk+' dk';
         return '<li class="task'+(dn?' done':'')+(op?'':' locked')+'">'+(op?ringHTML(dn?1:0,il.cat):'<span class="lockic" aria-hidden="true">'+LOCKIC+'</span>')+
-          '<button class="t-main" data-ders="'+d.id+'"'+(op?'':' aria-disabled="true"')+'><span class="t-name">'+(i+1)+'. '+esc(d.t)+'</span><span class="t-val">'+(op?esc(d.sev)+', '+d.dk+' dk, '+d.test.length+' soru'+(dn?', tamamlandı':''):'Önceki dersi bitirince açılır')+'</span></button>'+
-          '<div class="t-ctl">'+(op?'<button class="btn'+(dn?'':' plus')+'" data-ders="'+d.id+'">'+(dn?'Tekrar':'Başla')+'</button>':'')+'</div></li>'; }).join('')+'</ul></section>';
+          '<button class="t-main" data-ders="'+d.id+'"'+(op?'':' aria-disabled="true"')+'><span class="t-name">'+(g==='kirk'?esc(d.t):(i+1)+'. '+esc(d.t))+'</span><span class="t-val">'+(op?meta+', '+d.test.length+' soru'+(dn?', tamamlandı':''):'Önceki dersi bitirince açılır')+'</span></button>'+
+          '<div class="t-ctl">'+(op?'<button class="btn'+(dn?'':' plus')+'" data-ders="'+d.id+'">'+(dn?'Tekrar':'Başla')+'</button>':'')+'</div></li>'; }).join('')+'</ul></section>'; }
     h+='<p class="ed-note" style="margin:14px 2px 0">Dersler sırayla açılır; bir ders bitince sonraki açılır. Bilgileri derinleştirmek ve sorularına cevap almak için bir hocaya danışmanı tavsiye ederiz.</p>';
     return h;
   }
@@ -1678,14 +1710,18 @@ function viewIlim(){
     return '<button class="ilim-c" data-ilim="'+il.id+'" style="--rc:var(--c-'+il.cat+')"><span class="ilim-top">'+ringHTML(m?n/m:0,il.cat)+'<b>'+esc(il.ad)+'</b></span><span class="ilim-k">'+esc(il.kisa)+'</span><span class="ilim-n">'+n+' / '+m+' ders</span></button>'; }).join('')+'</div>';
   return h;
 }
-const dz={on:false,id:null,ans:{}};
-function openDers(id){ const d=DERS[id]; if(!d) return; if(!dersOpen(id)){ toast('Bu ders, önceki ders bitince açılır.'); return; } dz.on=true; dz.id=id; dz.ans={}; $('ders').hidden=false; document.body.style.overflow='hidden'; renderDers(); $('dzBody').scrollTop=0; $('ders').focus({preventScroll:true}); }
+const dz={on:false,id:null,ans:{},zk:{}};
+function openDers(id){ const d=DERS[id]; if(!d) return; if(!dersOpen(id)){ toast('Bu ders, önceki ders bitince açılır.'); return; } dz.on=true; dz.id=id; dz.ans={}; dz.zk={}; $('ders').hidden=false; document.body.style.overflow='hidden'; renderDers(); $('dzBody').scrollTop=0; $('ders').focus({preventScroll:true}); }
 function closeDers(){ dz.on=false; $('ders').hidden=true; document.body.style.overflow=''; render(); }
 function dzBlock(b){
   if(b.p) return '<p class="dz-p">'+esc(b.p)+'</p>';
   if(b.h) return '<h3 class="dz-h">'+esc(b.h)+'</h3>';
   if(b.list) return '<ul class="dz-l">'+b.list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
   if(b.not) return '<p class="zc-f">'+esc(b.not)+'</p>';
+  if(b.hadis){ const H=HADISLER[b.hadis-1]; return H?'<blockquote class="dz-hd"><p>“'+esc(H[0])+'”</p><cite>'+esc(H[1])+'</cite></blockquote>':''; }
+  if(b.esma) return b.esma.map(i=>{ const e=ESMA[i],c=dz.zk[i]||0,dn=c>=e[2];
+    return '<div class="dz-es'+(dn?' done':'')+'"><div class="dz-es-top"><span class="dz-es-n">'+(i+1)+'</span><div><b>'+esc(e[0])+'</b><span>'+esc(ESMA_ANLAM[i])+'</span></div><span class="dz-es-ar" lang="ar" dir="rtl">'+esc(e[1])+'</span></div>'+
+      '<div class="dz-es-act"><span class="small muted">Ebced sayısı: '+NF.format(e[2])+'</span><button class="btn'+(dn?'':' plus')+'" data-zk="'+i+'"'+(dn?' disabled':'')+'>'+(dn?CHECK+' Tamam':'Zikret '+NF.format(c)+' / '+NF.format(e[2]))+'</button></div></div>'; }).join('');
   if(b.ar) return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(b.ar)+'</p><p class="zc-ok">'+esc(b.ok)+'</p><p class="zc-tr">'+esc(b.tr)+'</p><p class="zc-src">Kaynak: '+esc(b.src)+'</p></div>';
   if(b.q){ const c=qCached(b.q),qk=b.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(b.q),0); return '<div class="dz-ar"><p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi; internet gelince tekrar denenecek.':'Âyet metni yükleniyor…')+'</p><p class="zc-src">'+esc(b.src)+'</p></div>'; }
     return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(c.ar)+'</p><p class="zc-tr">'+esc(c.tr)+'</p><p class="zc-src">'+esc(b.src)+'. Meal: '+(c.ed==='tr.vakfi'?'Türkiye Diyanet Vakfı':'Diyanet İşleri Başkanlığı')+'</p></div>'; }
@@ -1693,7 +1729,7 @@ function dzBlock(b){
 }
 function renderDers(){
   if(!dz.on) return; const d=DERS[dz.id],il=DERS_IL[dz.id]; if(!d) return;
-  $('dzTitle').textContent=d.t; $('dzSub').textContent=il.ad+', '+d.sev+', '+d.dk+' dk';
+  $('dzTitle').textContent=d.t; $('dzSub').textContent=il.id==='esma'?il.ad+', '+d.dk+' dk':d.grp==='kirk'?il.ad+', Kırk Hadis':il.ad+', '+d.sev+', '+d.dk+' dk';
   const n=Object.keys(dz.ans).length,ok=d.test.filter((q,i)=>dz.ans[i]===q.d).length,done=dersDone(d.id);
   let h=d.bl.map(dzBlock).join('');
   h+='<section class="dz-box"><h3 class="dz-h">Unutma</h3><ul class="dz-l">'+d.oz.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section>';
@@ -1707,6 +1743,7 @@ function renderDers(){
 }
 $('ders').addEventListener('click',e=>{
   if(e.target.closest('[data-dz="close"]')){ closeDers(); return; }
+  const zk=e.target.closest('[data-zk]'); if(zk&&!zk.disabled){ const i=+zk.dataset.zk,c=(dz.zk[i]||0)+1; dz.zk[i]=Math.min(ESMA[i][2],c); if(dz.zk[i]>=ESMA[i][2]){ buzz([30,60,30]); renderDers(); } else { buzz(8); zk.textContent='Zikret '+NF.format(dz.zk[i])+' / '+NF.format(ESMA[i][2]); } return; }
   const o=e.target.closest('[data-dq]'); if(o&&!o.disabled){ const i=+o.dataset.dq,j=+o.dataset.do; dz.ans[i]=j; const d=DERS[dz.id]; buzz(j===d.test[i].d?12:[20,40,20]); renderDers(); return; }
   if(e.target.closest('[data-dz="done"]')){
     const d=DERS[dz.id],il=DERS_IL[dz.id],first=!dersDone(d.id);

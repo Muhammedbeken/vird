@@ -7,7 +7,6 @@ const DEFAULT_TASKS=[
   {id:'istigfar',name:'İstiğfar',period:'d',target:100,unit:'adet',scope:'kisi',ar:'أستغفر الله'},
   {id:'hamdele',name:'Hamdele',period:'d',target:100,unit:'adet',scope:'kisi',ar:'الحمد لله'},
   {id:'salavat',name:'Salavat',period:'d',target:100,unit:'adet',scope:'kisi',ar:'اللهم صل على محمد'},
-  {id:'esma',name:'Günün Esmaları',period:'d',target:3,unit:'esma',scope:'kisi'},
   {id:'sabah_zikir',name:'Sabah zikirleri',period:'d',target:1,unit:'liste',kind:'sabah',scope:'kisi'},
   {id:'aksam_zikir',name:'Akşam zikirleri',period:'d',target:1,unit:'liste',kind:'aksam',scope:'kisi'},
   {id:'peygamber_dua',name:'Peygamberimizin duaları',period:'d',target:1,unit:'liste',kind:'dua',scope:'kisi'},
