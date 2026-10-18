@@ -443,6 +443,9 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .zcard header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .zcard header b{font-family:var(--serif);font-size:1.08rem}
 .zc-rep{font-size:.8rem;font-weight:700;color:var(--cobalt);background:var(--cobalt-soft);border-radius:6px;padding:2px 8px;white-space:nowrap}
+.ay-wrap{background:#fdf6e3;border-radius:10px;padding:6px 4px;margin:10px 0 6px;overflow:hidden}
+.ay-wrap .zc-ar{color:#1d1d1f;margin:4px 8px}
+.ay-cv{display:block;width:100%;height:auto}
 .zc-bes{font-family:var(--ar);font-size:1.3rem;text-align:center;margin:10px 0 0;color:var(--ink-2)}
 .zc-ar{font-family:var(--ar);font-size:1.6rem;line-height:2.1;text-align:right;margin:10px 0 6px;color:var(--ink)}
 .zc-ok{font-style:italic;color:var(--cobalt);margin:6px 0;line-height:1.5}
@@ -1252,7 +1255,7 @@ async function loadAyet(d){
 function dailyHTML(d,compact){
   const key=iso(d),A=ayetSt[key]; if(!A) loadAyet(d);
   let a;
-  if(A&&A.tr) a='<p class="d-ar" lang="ar" dir="rtl">'+esc(trM(A.ar))+'</p><p class="d-tr">'+esc(qMeal([A.s+':'+A.a])||A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
+  if(A&&A.tr) a=ayWrapHTML([A.s+':'+A.a],A.ar)+'<p class="d-tr">'+esc(qMeal([A.s+':'+A.a])||A.tr)+'</p><p class="d-ref">'+esc((SURELER[(A.s||1)-1]||'')+' sûresi, '+A.a+'. âyet')+'</p>';
   else if(A==='err') a='<p class="d-tr muted">Âyet yüklenemedi. İnternet bağlantısı gelince tekrar denenecek.</p>';
   else a='<p class="d-tr muted">Yükleniyor…</p>';
   if(A==='err'&&!ayetSt['_t'+key]){ ayetSt['_t'+key]=1; setTimeout(()=>{ delete ayetSt[key]; delete ayetSt['_t'+key]; },60000); }
@@ -1665,6 +1668,7 @@ function render(){
   const ss=$('sumStar'); if(ss&&ss.dataset.ilimP!=null){ setStar(ss,+ss.dataset.ilimP); } else if(ss){ const u=state.view; setStar(ss,state.tab==='y'?(yearStats(u,state.year).pct||0):comp(u,period(),state.cursor).pct); }
   if(cs) renderCounter();
   if(fsel){ try{ const el=v.querySelector(fsel); if(el&&!el.disabled) el.focus({preventScroll:true}); }catch(e){} }
+  setTimeout(()=>hydrateAyahs($('view')),0);
 }
 
 /* İlim */
@@ -1729,7 +1733,7 @@ function dzBlock(b){
       '<div class="dz-es-act"><span class="small muted">Ebced sayısı: '+NF.format(e[2])+'</span><button class="btn'+(dn?'':' plus')+'" data-zk="'+i+'"'+(dn?' disabled':'')+'>'+(dn?CHECK+' Tamam':'Zikret '+NF.format(c)+' / '+NF.format(e[2]))+'</button></div></div>'; }).join('');
   if(b.ar) return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(b.ar)+'</p><p class="zc-ok">'+esc(b.ok)+'</p><p class="zc-tr">'+esc(b.tr)+'</p><p class="zc-src">Kaynak: '+esc(b.src)+'</p></div>';
   if(b.q){ const c=qCached(b.q),qk=b.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(b.q),0); return '<div class="dz-ar"><p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi; internet gelince tekrar denenecek.':'Âyet metni yükleniyor…')+'</p><p class="zc-src">'+esc(b.src)+'</p></div>'; }
-    return '<div class="dz-ar"><p class="zc-ar" lang="ar" dir="rtl">'+esc(trM(c.ar))+'</p><p class="zc-tr">'+esc(qMeal(b.q)||c.tr)+'</p><p class="zc-src">'+esc(b.src)+'. Meal: '+(qMeal(b.q)||c.ed!=='tr.vakfi'?'Diyanet İşleri Başkanlığı':'Türkiye Diyanet Vakfı')+'</p></div>'; }
+    return '<div class="dz-ar">'+ayWrapHTML(b.q,c.ar)+'<p class="zc-tr">'+esc(qMeal(b.q)||c.tr)+'</p><p class="zc-src">'+esc(b.src)+'. Meal: '+(qMeal(b.q)||c.ed!=='tr.vakfi'?'Diyanet İşleri Başkanlığı':'Türkiye Diyanet Vakfı')+'</p></div>'; }
   return '';
 }
 function renderDers(){
@@ -1745,6 +1749,7 @@ function renderDers(){
   h+='<section class="dz-box"><h3 class="dz-h">Bugün uygula</h3><p class="dz-p">'+esc(d.uygula)+'</p></section>';
   h+='<div class="rd-end"><button class="btn plus" data-dz="done">'+(done?'Tekrar okudum':'Dersi tamamladım')+'</button></div>';
   const b=$('dzBody'),st=b.scrollTop; b.innerHTML=h; b.scrollTop=st;
+  setTimeout(()=>hydrateAyahs($('dzBody')),0);
 }
 $('ders').addEventListener('click',e=>{
   if(e.target.closest('[data-dz="close"]')){ closeDers(); return; }
@@ -1775,14 +1780,47 @@ function shareDaily(kind){
    Sayfalar ilk açılışta indirilir ve telefonda saklanır; meal ve sayfa-âyet eşleşmesi uygulamanın içindedir. */
 const MP_N=605;
 const MUSHAF_BASE=window.VIRD_MUSHAF_URL||(REPO?'https://'+REPO.split('/')[0].toLowerCase()+'.github.io/'+REPO.split('/')[1]+'/mushaf/':'mushaf/');
-let MMAP=null,MEAL=null,MEALIX=null,mmBusy=null;
+let MMAP=null,MEAL=null,MEALIX=null,mmBusy=null,AYC=null;
+/* Âyetleri Diyanet mushafından kesip göstermek: her âyetin sayfadaki yeri (satır ve sınırlar) önceden hesaplandı. */
+const AY_P={1:[274.1,36,127,307],2:[305.9,36,228,404]},ayP=pg=>AY_P[pg]||[83,42.75,78,458];
+const AYCACHE=new Map();
+function refAyahs(refs){ const L=[]; for(const r of refs){ const t=String(r); if(t.indexOf(':')>0){ const [s,a]=t.split(':').map(Number); L.push([s,a]); } else { const s=+t; for(let a=1;a<=MMAP.cnt[s-1];a++) L.push([s,a]); } } return L; }
+const loadImg=u=>new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=u; });
+async function ayahCanvases(key){
+  if(AYCACHE.has(key)) return AYCACHE.get(key);
+  await quranData(); if(!AYC) throw new Error('kesit verisi yok');
+  const out=[];
+  for(const [s,a] of (key==='bes'?[['bes']]:refAyahs(key.split(',')))){
+    const segs=AYC[a===undefined?'bes':s+':'+a]; if(!segs) throw new Error('kesit yok '+s+':'+a);
+    for(const [pg,fs,fx,ls,lx,top,yA,yB,bot] of segs){
+      const img=await loadImg(await mpImage(pg)),sc=img.naturalWidth/538.76,[,,X0,X1]=ayP(pg);
+      const cv=document.createElement('canvas'); cv.width=Math.round((X1-X0)*sc); cv.height=Math.round((bot-top)*sc);
+      const g=cv.getContext('2d'),P=(x,y)=>[(x-X0)*sc,(y-top)*sc];
+      const pts=fs===ls?[[lx,top],[fx,top],[fx,bot],[lx,bot]]:[[X0,top],[fx,top],[fx,yA],[X1,yA],[X1,bot],[lx,bot],[lx,yB],[X0,yB]];
+      g.beginPath(); pts.forEach(([x,y],i)=>{ const [px,py]=P(x,y); i?g.lineTo(px,py):g.moveTo(px,py); }); g.closePath(); g.clip();
+      g.drawImage(img,X0*sc,top*sc,cv.width,cv.height,0,0,cv.width,cv.height);
+      out.push(cv);
+    }
+  }
+  if(AYCACHE.size>40) AYCACHE.delete(AYCACHE.keys().next().value);
+  AYCACHE.set(key,out); return out;
+}
+function ayWrapHTML(refs,fallbackAr){ return '<div class="ay-wrap" data-ayq="'+esc(refs.join(','))+'" role="img" aria-label="Âyetin Arapça metni (Diyanet mushafından)"><p class="zc-ar" lang="ar" dir="rtl">'+esc(trM(fallbackAr||''))+'</p></div>'; }
+function hydrateAyahs(root){
+  (root||document).querySelectorAll('.ay-wrap[data-ayq]:not(.ok):not(.busy)').forEach(el=>{
+    const key=el.dataset.ayq; el.classList.add('busy');
+    ayahCanvases(key).then(cvs=>{ el.classList.remove('busy'); if(!el.isConnected) return; el.innerHTML=''; for(const c of cvs){ const k=document.createElement('canvas'); k.width=c.width; k.height=c.height; k.getContext('2d').drawImage(c,0,0); k.className='ay-cv'; el.appendChild(k); } el.classList.add('ok'); })
+      .catch(()=>{ el.classList.remove('busy'); });
+  });
+}
 async function quranData(){
   if(MMAP&&MEAL) return true;
   if(!mmBusy) mmBusy=(async()=>{
-    const [a,b]=await Promise.all([fetch('data/mushaf.json').then(r=>r.json()),fetch('data/meal.json').then(r=>r.json())]);
+    const [a,b,c]=await Promise.all([fetch('data/mushaf.json').then(r=>r.json()),fetch('data/meal.json').then(r=>r.json()),fetch('data/ayah.json').then(r=>r.json()).catch(()=>null)]);
+    AYC=c&&c.a?c.a:null;
     if(!a||!Array.isArray(a.pages)||!Array.isArray(a.cnt)||!b||!Array.isArray(b.m)) throw new Error('Kur\'an verisi bozuk');
     MMAP=a; MEAL=b.m; MEALIX={}; MEAL.forEach((r,i)=>{ for(const n of r[1]) MEALIX[r[0]+':'+n]=i; });
-    setTimeout(()=>{ renderSoon(); if(rd) renderReader(); if(dz.on) renderDers(); },0);
+    setTimeout(()=>{ renderSoon(); if(rd) renderReader(); if(dz.on) renderDers(); hydrateAyahs(); },0);
     return true;
   })().catch(e=>{ mmBusy=null; throw e; });
   return mmBusy;
@@ -1945,7 +1983,7 @@ function zCard(t,x,i){
   const v=Math.min(x.rep,Math.floor(val(t,rd.u,rd.k,'z_'+x.id))),done=v>=x.rep;
   let body;
   if(x.q){ const c=qCached(x.q),qk=x.q.join('|'); if(!c){ const failed=qFail[qk]&&Date.now()-qFail[qk]<30000; if(!failed) setTimeout(()=>qLoad(x.q),0); body='<p class="zc-tr muted">'+(failed?'Âyet metni yüklenemedi. İlk açılışta internet gerekir; bağlantı gelince tekrar denenecek.':'Âyet metni yükleniyor… (ilk seferde internet gerekir)')+'</p>'; }
-    else body=(c.bes?'<p class="zc-bes" lang="ar" dir="rtl">'+esc(trM(c.bes))+'</p>':'')+'<p class="zc-ar" lang="ar" dir="rtl">'+esc(trM(c.ar))+'</p><p class="zc-tr">'+esc(qMeal(x.q)||c.tr)+'</p><p class="zc-src">Meal: '+(qMeal(x.q)||c.ed!=='tr.vakfi'?'Diyanet İşleri Başkanlığı':'Türkiye Diyanet Vakfı')+'</p>'; }
+    else body=(c.bes?ayWrapHTML(['bes'],c.bes):'')+ayWrapHTML(x.q,c.ar)+'<p class="zc-tr">'+esc(qMeal(x.q)||c.tr)+'</p><p class="zc-src">Meal: '+(qMeal(x.q)||c.ed!=='tr.vakfi'?'Diyanet İşleri Başkanlığı':'Türkiye Diyanet Vakfı')+'</p>'; }
   else body='<p class="zc-ar" lang="ar" dir="rtl">'+esc(x.ar)+'</p><p class="zc-ok">'+esc(x.ok)+'</p><p class="zc-tr">'+esc(x.tr)+'</p>';
   return '<article class="zcard'+(done?' done':'')+'" data-zi="'+i+'"><header><b>'+esc(x.t)+'</b><span class="zc-rep">'+(x.rep>1?x.rep+' kez':'1 kez')+'</span></header>'+body+
     (x.f?'<p class="zc-f">'+esc(x.f)+'</p>':'')+'<p class="zc-src">Kaynak: '+esc(x.src)+'</p>'+
@@ -1959,6 +1997,7 @@ function renderReader(){
   $('rdBar').style.setProperty('--p',(m?n/m:0).toFixed(3));
   const note=t.kind==='sabah'?'Sabah zikirleri sabah namazından sonra, gün ağarırken okunur.':t.kind==='aksam'?'Akşam zikirleri ikindiden sonra ya da akşam okunur.':'Bugün için Peygamberimizin dualarından üç tanesi. Her gün farklı dualar gelir.';
   const b=$('rdBody'),st=b.scrollTop;
+  setTimeout(()=>hydrateAyahs($('rdBody')),0);
   b.innerHTML='<p class="rd-note">'+esc(note)+' Metinlere dokunarak değil, alttaki düğmeyle ilerlersin.</p>'+it.map((x,i)=>zCard(t,x,i)).join('')+(n>=m?'<div class="rd-end"><p>Allah kabul etsin.</p><button class="btn plus" data-rd="close">Kapat</button></div>':'');
   b.scrollTop=st;
 }
