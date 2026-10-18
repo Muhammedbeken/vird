@@ -488,16 +488,17 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--cobalt);flex:none
 .mp-ay{}
 .mp-n{color:var(--turq);font-size:.6em;white-space:nowrap}
 #mpBody{touch-action:pan-x pan-y;overflow:auto}
-.mp-pg{position:relative;width:calc(100% * var(--mpz,1));min-height:60vh;background:#fdf6e3;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mp-pg{position:relative;width:calc(100% * var(--mpz,1));background:#fdf6e3;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .mp-img{display:block;width:100%;height:auto}
-.mp-load{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#6b6b6b;font-size:.92rem}
+.mp-load{position:sticky;left:0;box-sizing:border-box;width:calc(100vw - 28px);max-width:620px;min-height:50vh;display:grid;place-items:center;text-align:center;padding:20px;border-radius:10px;background:#fdf6e3;color:#6b6b6b;font-size:.92rem}
+.mp-zh{position:sticky;left:0;width:calc(100vw - 28px)}
 .mp-load:not(:empty)~*{}
 .mp-ic .qic{width:32px;height:32px}
 .mp-zh{font-size:.8rem;color:var(--ink-2);text-align:center;margin:0 0 10px}
 .mp-sh{display:flex;justify-content:center;margin:8px 0 4px}
 .mp-sh span{font-family:var(--serif);font-size:1rem;direction:ltr;color:var(--cobalt);border:1.5px solid var(--gold);border-radius:999px;padding:3px 16px;background:var(--bg)}
 .mp-bes{text-align:center;margin:0 0 6px;font-size:1.5rem;color:var(--ink-2)}
-.mp-meal{font-size:calc(1rem * (1 + (var(--mpz,1) - 1) * .6));margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.mp-meal{position:sticky;left:0;box-sizing:border-box;width:calc(100vw - 28px);max-width:620px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
 .mp-meal h3{font-family:var(--serif);margin:0 0 6px;font-size:1.05rem}
 .mp-tr{margin:8px 0;line-height:1.55}
 .mp-tr b{color:var(--cobalt)}
@@ -1852,14 +1853,14 @@ function renderMushaf(top){
   const t=mpTask(),k=docKey('d',sod(new Date())),v=t?Math.floor(val(t,ME,k)):0;
   const doneKey='vird:mpd:'+iso(new Date())+':'+(mp.tid||''),doneSet=new Set(String(lsGet(doneKey)||'').split(',').filter(Boolean));
   $('mpBody').innerHTML=(lsGet('vird:mpz')?'':'<p class="mp-zh">Yazıyı büyütmek için iki parmağınla yakınlaştır.</p>')+
-    '<div class="mp-pg"><img class="mp-img" id="mpImg" alt="Kur\'an-ı Kerim, '+n+'. sayfa" decoding="async"><div class="mp-load" id="mpLoad">Sayfa yükleniyor…</div></div>'+
+    '<div class="mp-load" id="mpLoad">Sayfa yükleniyor…</div><div class="mp-pg" id="mpPg" hidden><img class="mp-img" id="mpImg" alt="Kur\'an-ı Kerim, '+n+'. sayfa" decoding="async"></div>'+
     (mp.meal?'<div class="mp-meal"><h3>Meal</h3>'+tr+'<p class="zc-src">Mushaf ve meal: Diyanet İşleri Başkanlığı.</p></div>':'');
   $('mpCount').textContent=t?(t.name+': bugün '+v+' / '+t.target+' sayfa'+(doneSet.has(String(n))?', bu sayfa sayıldı':'')):'Sayfa görevin yok; okuman sayılmaz.';
   $('mpRead').textContent=doneSet.has(String(n))?'Sonraki sayfa':'Okudum, sonraki sayfa';
   $('mpPrev').disabled=n<=1; $('mpNext').disabled=n>=MP_N;
-  if(top) $('mpBody').scrollTop=0;
+  if(top){ $('mpBody').scrollTop=0; }
   const fail=()=>{ const l=$('mpLoad'); if(l&&mp.page===n) l.innerHTML='Sayfa indirilemedi. İnternet bağlantını kontrol et; her sayfa bir kez indirilip telefonda saklanır.<br><button class="btn plus" data-mp="retry2" style="margin-top:10px">Tekrar dene</button>'; };
-  mpImage(n).then(u=>{ if(!mp.on||mp.page!==n) return; const im=$('mpImg'); if(!im) return; im.onload=()=>{ const l=$('mpLoad'); if(l) l.remove(); }; im.onerror=fail; im.src=u; })
+  mpImage(n).then(u=>{ if(!mp.on||mp.page!==n) return; const im=$('mpImg'); if(!im) return; im.onload=()=>{ const l=$('mpLoad'); if(l) l.remove(); const pg=$('mpPg'); if(pg) pg.hidden=false; const b=$('mpBody'); if(b&&top!==false) b.scrollLeft=b.scrollWidth; }; im.onerror=fail; im.src=u; })
     .catch(()=>{ const l=$('mpLoad'); if(l&&mp.page===n) l.innerHTML='Sayfa indirilemedi. İnternet bağlantını kontrol et; her sayfa bir kez indirilip telefonda saklanır.<br><button class="btn plus" data-mp="retry2" style="margin-top:10px">Tekrar dene</button>'; });
   for(const m of [n+1,n-1]) if(m>=1&&m<=MP_N) mpImage(m).catch(()=>{});
 }
